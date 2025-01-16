@@ -4,7 +4,8 @@ import pygame, os, sys
 pygame.init()
 pygame.display.set_caption('Walking')
 size = width, height = 1400, 800
-screen = pygame.display.set_mode(size, pygame.RESIZABLE)
+min_width, min_height = 1200, 700
+screen = pygame.display.set_mode(size, pygame.RESIZABLE, pygame.FULLSCREEN)
 
 
 def load_image(name, colorkey=None):
@@ -114,24 +115,23 @@ def final_screen():
         clock.tick(FPS)
 
 
-class Tile(pygame.sprite.Sprite):
-    def __init__(self, tile_type, pos_x, pos_y):
-        super().__init__(tiles_group, all_sprites)
-        if tile_type == 'tree':
-            self.tile_width, self.tile_height = 100, 100
-        self.cur_img = tile_images[tile_type]
+class Tree(pygame.sprite.Sprite):
+    def __init__(self, pos_x, pos_y):
+        super().__init__(trees_group, all_sprites)
+        self.width, self.height = tree_width, tree_height
+        self.cur_img = tile_images['tree']
         self.image = pygame.transform.scale(self.cur_img,
-                                            (width // (width // self.tile_width),
-                                             height // (height // self.tile_height)))
+                                            (width // (width // self.width),
+                                             height // (height // self.height)))
         self.rect = self.image.get_rect().move(
             pos_x, pos_y)
 
     def resize(self, SW, SH):
-        global width, height
-        new_W, new_H = self.tile_width * (SW / width), self.tile_height * (SH / height)
+        global tree_width, tree_height, width, height
+        new_W, new_H = self.width * (SW / width), self.height * (SH / height)
         self.image = pygame.transform.scale(self.cur_img,
                                             (new_W, new_H))
-        self.tile_width, self.tile_height = new_W, new_H
+        tree_width, tree_height = new_W, new_H
 
 
 class Player(pygame.sprite.Sprite):
@@ -148,6 +148,33 @@ class Player(pygame.sprite.Sprite):
         self.image = pygame.transform.scale(self.MC_img,
                                             (new_W, new_H))
         MC_width, MC_height = new_W, new_H
+
+    def update(self, keys, vx=0, vy=0):
+        if not keys[pygame.K_SPACE]:
+            if keys[pygame.K_a]:
+                vx = -15
+            if keys[pygame.K_d]:
+                vx = 15
+            if keys[pygame.K_w]:
+                vy = -15
+            if keys[pygame.K_s]:
+                vy = 15
+
+            if abs(vx) == abs(vy) == 15:
+                vx = vx / (2 ** 0.5)
+                vy = vy / (2 ** 0.5)
+
+            self.rect.x += vx
+            if pygame.sprite.spritecollideany(self, trees_group):
+                self.rect.x -= vx
+                vx = 0
+
+            self.rect.y += vy
+            if pygame.sprite.spritecollideany(self, trees_group):
+                self.rect.y -= vy
+                vy = 0
+        else:
+            self.rect.x, self.rect.y = width // 2, height // 2
 
 
 class Camera:
@@ -168,33 +195,24 @@ def level1(screen):
     global background, width, height
     resized_flag = False
     camera = Camera()
-    tree_ab_x, tree_ab_y = width // int(1.3 * tree_n_w), height // int(0.7 * tree_n_h)
-    for x in range(0, width, tree_ab_x):
-        for y in range(0, height, tree_ab_y):
-            if x == 0 or y == 0:
-                Tile('tree', x, y)
 
     while True:
         screen.fill('black')
         screen.blit(background, (0, 0))
         keys = pygame.key.get_pressed()
+        generate_borders(width, height)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
             if event.type == pygame.KEYDOWN and event.key == pygame.K_q:
                 return
-            if keys[pygame.K_a]:
-                MainCharacter.rect.x -= step
-            if keys[pygame.K_d]:
-                MainCharacter.rect.x += step
-            if keys[pygame.K_w]:
-                MainCharacter.rect.y -= step
-            if keys[pygame.K_s]:
-                MainCharacter.rect.y += step
             if event.type == pygame.VIDEORESIZE:
+                new_width = max(event.w, min_width)
+                new_height = max(event.h, min_height)
+                screen = pygame.display.set_mode((new_width, new_height), pygame.RESIZABLE)
                 resized_flag = True
-                new_SW, new_SH = event.w, event.h
+                new_SW, new_SH = new_width, new_height
                 background = pygame.transform.scale(background, (new_SW, new_SH))
 
         camera.update(MainCharacter)
@@ -205,30 +223,47 @@ def level1(screen):
         if resized_flag:
             width, height = new_SW, new_SH
         resized_flag = False
-        tiles_group.draw(screen)
+
+        trees_group.draw(screen)
+        player_group.update(keys)
         player_group.draw(screen)
 
         pygame.display.flip()
         clock.tick(FPS)
 
 
+def generate_borders(w, h):
+    for sprite in trees_group:
+        sprite.kill()
+
+    horz_step = max(1, (w - tree_width) // (Ntrees_horz - 1))
+    for i in range(Ntrees_horz):
+        Tree(i * horz_step, 0)
+        Tree(i * horz_step, h - tree_height)
+
+    vert_step = max(1, (h - tree_height) // (Ntrees_vert - 1))
+    for i in range(Ntrees_vert):
+        Tree(0, i * vert_step)
+        Tree(w - tree_width, i * vert_step)
+
+
 all_sprites = pygame.sprite.Group()
-tiles_group = pygame.sprite.Group()
+trees_group = pygame.sprite.Group()
 player_group = pygame.sprite.Group()
 
 tile_images = {
     'tree': load_image(r'game\tree.png')
 }
-tree_n_w, tree_n_h = 20, 16
+Ntrees_horz, Ntrees_vert = 30, 18
 background = pygame.transform.scale(load_image(r'game\background1.jpg'), (width, height))
 
 player_image = load_image('game\maincharacter.png')
 MC_width, MC_height = 50, 70
+tree_width = tree_height = 100
 MainCharacter = Player(width // 2, height // 2)
 
 clock = pygame.time.Clock()
 FPS = 60
-step = 10
 
 """
 player, level_x, level_y = generate_level(load_level('lvl1.txt'))
