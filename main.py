@@ -115,14 +115,16 @@ def final_screen():
         clock.tick(FPS)
 
 
+def make_img(img, w, h, persW, persH):
+    return pygame.transform.scale(img, (w // (w // persW), h // (h // persH)))
+
+
 class Tree(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y):
         super().__init__(trees_group, all_sprites)
         self.width, self.height = tree_width, tree_height
         self.cur_img = tile_images['tree']
-        self.image = pygame.transform.scale(self.cur_img,
-                                            (width // (width // self.width),
-                                             height // (height // self.height)))
+        self.image = make_img(self.cur_img, width, height, self.width, self.height)
         self.rect = self.image.get_rect().move(
             pos_x, pos_y)
 
@@ -137,30 +139,36 @@ class Tree(pygame.sprite.Sprite):
 class Player(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y):
         super().__init__(player_group, all_sprites)
-        self.MC_img = player_image
-        self.image = pygame.transform.scale(self.MC_img, (width // (width // MC_width), height // (height // MC_height)))
+        self.images = player_images
+        self.image = make_img(self.images['stay'], width, height, MC_width, MC_height)
         self.rect = self.image.get_rect().move(
              pos_x + 15, pos_y + 5)
+        self.directory = 'f'
 
     def resize(self, SW, SH):
         global MC_width, MC_height, width, height
         new_W, new_H = MC_width * (SW / width), MC_height * (SH / height)
-        self.image = pygame.transform.scale(self.MC_img,
+        self.image = pygame.transform.scale(self.image,
                                             (new_W, new_H))
         MC_width, MC_height = new_W, new_H
 
     def update(self, keys, vx=0, vy=0):
+        l, r, f, d = 0, 0, 0, 0
         if not keys[pygame.K_SPACE]:
             if keys[pygame.K_a]:
-                vx = -15
+                vx = -5
+                l = 1
             if keys[pygame.K_d]:
-                vx = 15
+                vx = 5
+                r = 1
             if keys[pygame.K_w]:
-                vy = -15
+                vy = -5
+                f = 1
             if keys[pygame.K_s]:
-                vy = 15
+                vy = 5
+                d = 1
 
-            if abs(vx) == abs(vy) == 15:
+            if abs(vx) == abs(vy) == 5:
                 vx = vx / (2 ** 0.5)
                 vy = vy / (2 ** 0.5)
 
@@ -173,8 +181,86 @@ class Player(pygame.sprite.Sprite):
             if pygame.sprite.spritecollideany(self, trees_group):
                 self.rect.y -= vy
                 vy = 0
+
+            if f:
+                if r:
+                    self.image = make_img(self.images['fr'], width, height, MC_width, MC_height)
+                    self.directory = 'fr'
+                elif l:
+                    self.image = make_img(self.images['fl'], width, height, MC_width, MC_height)
+                    self.directory = 'fl'
+                else:
+                    self.image = make_img(self.images['f'], width, height, MC_width, MC_height)
+                    self.directory = 'f'
+            elif d:
+                if r:
+                    self.image = make_img(self.images['dr'], width, height, MC_width, MC_height)
+                    self.directory = 'dr'
+                elif l:
+                    self.image = make_img(self.images['dl'], width, height, MC_width, MC_height)
+                    self.directory = 'dl'
+                else:
+                    self.image = make_img(self.images['d'], width, height, MC_width, MC_height)
+                    self.directory = 'd'
+            elif r:
+                self.image = make_img(self.images['r'], width, height, MC_width, MC_height)
+                self.directory = 'r'
+            elif l:
+                self.image = make_img(self.images['l'], width, height, MC_width, MC_height)
+                self.directory = 'l'
+            else:
+                self.image = make_img(self.images['stay'], width, height, MC_width, MC_height)
+                self.directory = 'f'
+
         else:
             self.rect.x, self.rect.y = width // 2, height // 2
+
+
+class MCBullet(pygame.sprite.Sprite):
+    def __init__(self, pos_x, pos_y, dir):
+        super().__init__(MCbullet_group, all_sprites)
+        self.images = MCbullet_images
+        self.dir = dir
+        self.image = make_img(self.images[self.dir], width, height, MCbullet_width, MCbullet_height)
+        self.rect = self.image.get_rect().move(
+             pos_x, pos_y)
+        if 'f' in self.dir:
+            if self.dir == 'fr':
+                vx, vy = bullet_def_v / (2 ** 0.5), -bullet_def_v / (2 ** 0.5)
+            elif self.dir == 'fl':
+                vx, vy = -bullet_def_v / (2 ** 0.5), -bullet_def_v / (2 ** 0.5)
+            else:
+                vx, vy = 0, -bullet_def_v
+        elif 'd' in self.dir:
+            if self.dir == 'dr':
+                vx, vy = bullet_def_v / (2 ** 0.5), bullet_def_v / (2 ** 0.5)
+            elif self.dir == 'dl':
+                vx, vy = -bullet_def_v / (2 ** 0.5), bullet_def_v / (2 ** 0.5)
+            else:
+                vx, vy = 0, bullet_def_v
+        elif self.dir == 'r':
+            vx, vy = bullet_def_v, 0
+        else:
+            vx, vy = -bullet_def_v, 0
+        self.vx, self.vy = vx, vy
+        print(2)
+
+    def resize(self, SW, SH):
+        global MCbullet_width, MCbullet_height, width, height
+        new_W, new_H = MCbullet_width * (SW / width), MCbullet_height * (SH / height)
+        self.image = pygame.transform.scale(self.image,
+                                            (new_W, new_H))
+        MCbullet_width, MCbullet_height = new_W, new_H
+
+    def update(self):
+        print(3)
+        if not -MCbullet_width <= self.rect.x <= width + MCbullet_width or\
+                -MCbullet_height <= self.rect.y <= height + MCbullet_height:
+            self.kill()
+        else:
+            print(4)
+            self.rect.x += self.vx
+            self.rect.y += self.vy
 
 
 class Camera:
@@ -214,6 +300,10 @@ def level1(screen):
                 resized_flag = True
                 new_SW, new_SH = new_width, new_height
                 background = pygame.transform.scale(background, (new_SW, new_SH))
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    ...
+                    MCbullet_group.draw(...)
 
         camera.update(MainCharacter)
         for sprite in all_sprites:
@@ -227,6 +317,8 @@ def level1(screen):
         trees_group.draw(screen)
         player_group.update(keys)
         player_group.draw(screen)
+        MCbullet_group.update()
+        MCbullet_group.draw(...)
 
         pygame.display.flip()
         clock.tick(FPS)
@@ -250,6 +342,7 @@ def generate_borders(w, h):
 all_sprites = pygame.sprite.Group()
 trees_group = pygame.sprite.Group()
 player_group = pygame.sprite.Group()
+MCbullet_group = pygame.sprite.Group()
 
 tile_images = {
     'tree': load_image(r'game\tree.png')
@@ -257,8 +350,19 @@ tile_images = {
 Ntrees_horz, Ntrees_vert = 30, 18
 background = pygame.transform.scale(load_image(r'game\background1.jpg'), (width, height))
 
-player_image = load_image('game\maincharacter.png')
+player_images = {'f': load_image('game\MC_moving\MC_up.png'), 'd': load_image('game\MC_moving\MC_down.png'),
+                 'l': load_image('game\MC_moving\MC_left.png'), 'r': load_image('game\MC_moving\MC_right.png'),
+                 'fr': load_image('game\MC_moving\MC_UR.png'), 'fl': load_image('game\MC_moving\MC_UL.png'),
+                 'dr': load_image('game\MC_moving\MC_DR.png'), 'dl': load_image('game\MC_moving\MC_DL.png'),
+                 'stay': load_image('game\MC_moving\MC_up.png')}
+MCbullet_images = {'f': load_image(r'game\MCBullet_moving\Bullet_up.png'), 'd': load_image(r'game\MCBullet_moving\Bullet_down.png'),
+                 'l': load_image(r'game\MCBullet_moving\Bullet_left.png'), 'r': load_image(r'game\MCBullet_moving\Bullet_right.png'),
+                 'fr': load_image(r'game\MCBullet_moving\Bullet_UR.png'), 'fl': load_image(r'game\MCBullet_moving\Bullet_UL.png'),
+                 'dr': load_image(r'game\MCBullet_moving\Bullet_DR.png'), 'dl': load_image(r'game\MCBullet_moving\Bullet_DL.png')}
+
 MC_width, MC_height = 50, 70
+MCbullet_width, MCbullet_height = 8, 50
+bullet_def_v = 20
 tree_width = tree_height = 100
 MainCharacter = Player(width // 2, height // 2)
 
