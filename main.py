@@ -156,19 +156,19 @@ class Player(pygame.sprite.Sprite):
         l, r, f, d = 0, 0, 0, 0
         if not keys[pygame.K_SPACE]:
             if keys[pygame.K_a]:
-                vx = -5
+                vx = -mc_def_v
                 l = 1
             if keys[pygame.K_d]:
-                vx = 5
+                vx = mc_def_v
                 r = 1
             if keys[pygame.K_w]:
-                vy = -5
+                vy = -mc_def_v
                 f = 1
             if keys[pygame.K_s]:
-                vy = 5
+                vy = mc_def_v
                 d = 1
 
-            if abs(vx) == abs(vy) == 5:
+            if abs(vx) == abs(vy) == mc_def_v:
                 vx = vx / (2 ** 0.5)
                 vy = vy / (2 ** 0.5)
 
@@ -217,13 +217,13 @@ class Player(pygame.sprite.Sprite):
 
 
 class MCBullet(pygame.sprite.Sprite):
-    def __init__(self, pos_x, pos_y, dir):
+    def __init__(self, coords, dir):
         super().__init__(MCbullet_group, all_sprites)
         self.images = MCbullet_images
         self.dir = dir
         self.image = make_img(self.images[self.dir], width, height, MCbullet_width, MCbullet_height)
         self.rect = self.image.get_rect().move(
-             pos_x, pos_y)
+             coords[0] + MCbullet_width // 5.5, coords[1] + MCbullet_height // 2)
         if 'f' in self.dir:
             if self.dir == 'fr':
                 vx, vy = bullet_def_v / (2 ** 0.5), -bullet_def_v / (2 ** 0.5)
@@ -243,7 +243,6 @@ class MCBullet(pygame.sprite.Sprite):
         else:
             vx, vy = -bullet_def_v, 0
         self.vx, self.vy = vx, vy
-        print(2)
 
     def resize(self, SW, SH):
         global MCbullet_width, MCbullet_height, width, height
@@ -253,12 +252,10 @@ class MCBullet(pygame.sprite.Sprite):
         MCbullet_width, MCbullet_height = new_W, new_H
 
     def update(self):
-        print(3)
-        if not -MCbullet_width <= self.rect.x <= width + MCbullet_width or\
-                -MCbullet_height <= self.rect.y <= height + MCbullet_height:
+        if not -MCbullet_width <= self.rect.x <= width + MCbullet_width or \
+                not -MCbullet_height <= self.rect.y <= height + MCbullet_height:
             self.kill()
         else:
-            print(4)
             self.rect.x += self.vx
             self.rect.y += self.vy
 
@@ -302,8 +299,7 @@ def level1(screen):
                 background = pygame.transform.scale(background, (new_SW, new_SH))
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
-                    ...
-                    MCbullet_group.draw(...)
+                    MCBullet((MainCharacter.rect.x, MainCharacter.rect.y), MainCharacter.directory)
 
         camera.update(MainCharacter)
         for sprite in all_sprites:
@@ -318,7 +314,7 @@ def level1(screen):
         player_group.update(keys)
         player_group.draw(screen)
         MCbullet_group.update()
-        MCbullet_group.draw(...)
+        MCbullet_group.draw(screen)
 
         pygame.display.flip()
         clock.tick(FPS)
@@ -356,12 +352,13 @@ player_images = {'f': load_image('game\MC_moving\MC_up.png'), 'd': load_image('g
                  'dr': load_image('game\MC_moving\MC_DR.png'), 'dl': load_image('game\MC_moving\MC_DL.png'),
                  'stay': load_image('game\MC_moving\MC_up.png')}
 MCbullet_images = {'f': load_image(r'game\MCBullet_moving\Bullet_up.png'), 'd': load_image(r'game\MCBullet_moving\Bullet_down.png'),
-                 'l': load_image(r'game\MCBullet_moving\Bullet_left.png'), 'r': load_image(r'game\MCBullet_moving\Bullet_right.png'),
-                 'fr': load_image(r'game\MCBullet_moving\Bullet_UR.png'), 'fl': load_image(r'game\MCBullet_moving\Bullet_UL.png'),
-                 'dr': load_image(r'game\MCBullet_moving\Bullet_DR.png'), 'dl': load_image(r'game\MCBullet_moving\Bullet_DL.png')}
+                   'l': load_image(r'game\MCBullet_moving\Bullet_left.png'), 'r': load_image(r'game\MCBullet_moving\Bullet_right.png'),
+                   'fr': load_image(r'game\MCBullet_moving\Bullet_UR.png'), 'fl': load_image(r'game\MCBullet_moving\Bullet_UL.png'),
+                   'dr': load_image(r'game\MCBullet_moving\Bullet_DR.png'), 'dl': load_image(r'game\MCBullet_moving\Bullet_DL.png')}
 
 MC_width, MC_height = 50, 70
-MCbullet_width, MCbullet_height = 8, 50
+mc_def_v = 10
+MCbullet_width, MCbullet_height = 40, 40
 bullet_def_v = 20
 tree_width = tree_height = 100
 MainCharacter = Player(width // 2, height // 2)
