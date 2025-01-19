@@ -49,6 +49,7 @@ def generate_level(level):
     # вернем игрока, а также размер поля в клетках
     return new_player, x, y
 """
+# test
 
 
 def terminate():
