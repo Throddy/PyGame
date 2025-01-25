@@ -261,6 +261,20 @@ class MCBullet(pygame.sprite.Sprite):
             self.rect.y += self.vy
 
 
+class Enemy(pygame.sprite.Sprite):
+    def __init__(self, pos_x, pos_y):
+        super().__init__(enemy_group, all_sprites)
+        self.images = enemy_images
+        self.image = make_img(self.images['stay'], width, height, MC_width, MC_height)
+        self.rect = self.image.get_rect().move(
+            pos_x + 15, pos_y + 5)
+        self.directory = 'f'
+        print(11111)
+
+    def update(self, *args, **kwargs):
+        ...
+
+
 class Camera:
     def __init__(self):
         self.dx = 0
@@ -316,6 +330,7 @@ def level1(screen):
         player_group.draw(screen)
         MCbullet_group.update()
         MCbullet_group.draw(screen)
+        enemy_group.draw(screen)
 
         pygame.display.flip()
         clock.tick(FPS)
@@ -340,6 +355,7 @@ all_sprites = pygame.sprite.Group()
 trees_group = pygame.sprite.Group()
 player_group = pygame.sprite.Group()
 MCbullet_group = pygame.sprite.Group()
+enemy_group = pygame.sprite.Group()
 
 tile_images = {
     'tree': load_image(r'game\tree.png')
@@ -356,6 +372,7 @@ MCbullet_images = {'f': load_image(r'game\MCBullet_moving\Bullet_up.png'), 'd': 
                    'l': load_image(r'game\MCBullet_moving\Bullet_left.png'), 'r': load_image(r'game\MCBullet_moving\Bullet_right.png'),
                    'fr': load_image(r'game\MCBullet_moving\Bullet_UR.png'), 'fl': load_image(r'game\MCBullet_moving\Bullet_UL.png'),
                    'dr': load_image(r'game\MCBullet_moving\Bullet_DR.png'), 'dl': load_image(r'game\MCBullet_moving\Bullet_DL.png')}
+enemy_images = {'stay': load_image(r'game\enemy\EK.png')}
 
 MC_width, MC_height = 50, 70
 mc_def_v = 10
@@ -363,6 +380,7 @@ MCbullet_width, MCbullet_height = 40, 40
 bullet_def_v = 20
 tree_width = tree_height = 100
 MainCharacter = Player(width // 2, height // 2)
+Enemys = Enemy(width // 2, height // 2)
 
 clock = pygame.time.Clock()
 FPS = 60
