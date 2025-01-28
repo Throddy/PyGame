@@ -1,4 +1,5 @@
 import pygame, os, sys
+from PIL import Image
 from math import *
 
 
@@ -23,6 +24,21 @@ def load_image(name, colorkey=None):
     else:
         image = image.convert_alpha()
     return image
+
+
+def convert_gif(path):
+    gif = Image.open(path)
+    frames = []
+    while True:
+        frame = gif.copy().convert("RGBA")
+        pygame_frame = pygame.image.fromstring(frame.tobytes(), frame.size, "RGBA")
+        frames.append(pygame_frame)
+
+        try:
+            gif.seek(gif.tell() + 1)
+        except EOFError:
+            break
+    return frames
 
 
 """
@@ -50,7 +66,6 @@ def generate_level(level):
     # вернем игрока, а также размер поля в клетках
     return new_player, x, y
 """
-# test
 
 
 def terminate():
@@ -355,11 +370,7 @@ tile_images = {
 Ntrees_horz, Ntrees_vert = 30, 18
 background = pygame.transform.scale(load_image(r'game\background1.jpg'), (width, height))
 
-player_images = {'f': load_image('game\MC_moving\MC_up.png'), 'd': load_image('game\MC_moving\MC_down.png'),
-                 'l': load_image('game\MC_moving\MC_left.png'), 'r': load_image('game\MC_moving\MC_right.png'),
-                 'fr': load_image('game\MC_moving\MC_UR.png'), 'fl': load_image('game\MC_moving\MC_UL.png'),
-                 'dr': load_image('game\MC_moving\MC_DR.png'), 'dl': load_image('game\MC_moving\MC_DL.png'),
-                 'stay': load_image('game\MC_moving\MC_up.png')}
+player_media = {'moving': convert_gif(r'game\MC_moving\MCwalk.gif')}
 enemy_images = {'stay': load_image(r'game\enemy\EK.png')}
 
 MC_width, MC_height = 50, 70
