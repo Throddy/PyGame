@@ -1,4 +1,5 @@
 import pygame, os, sys
+from math import *
 
 
 pygame.init()
@@ -218,32 +219,22 @@ class Player(pygame.sprite.Sprite):
 
 
 class MCBullet(pygame.sprite.Sprite):
-    def __init__(self, coords, dir):
+    def __init__(self, MC_coords, mouse_coords):
         super().__init__(MCbullet_group, all_sprites)
-        self.images = MCbullet_images
-        self.dir = dir
-        self.image = make_img(self.images[self.dir], width, height, MCbullet_width, MCbullet_height)
+        self.image = tile_images['MC_bullet']
+        self.image = make_img(self.image, width, height, MCbullet_width, MCbullet_height)
         self.rect = self.image.get_rect().move(
-             coords[0] + MCbullet_width // 5.5, coords[1] + MCbullet_height // 2)
-        if 'f' in self.dir:
-            if self.dir == 'fr':
-                vx, vy = bullet_def_v / (2 ** 0.5), -bullet_def_v / (2 ** 0.5)
-            elif self.dir == 'fl':
-                vx, vy = -bullet_def_v / (2 ** 0.5), -bullet_def_v / (2 ** 0.5)
-            else:
-                vx, vy = 0, -bullet_def_v
-        elif 'd' in self.dir:
-            if self.dir == 'dr':
-                vx, vy = bullet_def_v / (2 ** 0.5), bullet_def_v / (2 ** 0.5)
-            elif self.dir == 'dl':
-                vx, vy = -bullet_def_v / (2 ** 0.5), bullet_def_v / (2 ** 0.5)
-            else:
-                vx, vy = 0, bullet_def_v
-        elif self.dir == 'r':
-            vx, vy = bullet_def_v, 0
-        else:
-            vx, vy = -bullet_def_v, 0
-        self.vx, self.vy = vx, vy
+             MC_coords[0] + MCbullet_width // 5.5, MC_coords[1] + MCbullet_height // 2)
+
+        self.speed = bullet_def_v
+        vx = (mouse_coords[0] - MCbullet_width // 2) - MC_coords[0]
+        vy = (mouse_coords[1] - MCbullet_height // 2) - MC_coords[1]
+        dist = hypot(vx, vy)
+        self.vx = (vx / dist) * self.speed
+        self.vy = (vy / dist) * self.speed
+
+        self.angle = degrees(atan2(-vy, vx))
+        self.image = pygame.transform.rotate(self.image, self.angle)
 
     def resize(self, SW, SH):
         global MCbullet_width, MCbullet_height, width, height
@@ -263,7 +254,7 @@ class MCBullet(pygame.sprite.Sprite):
 
 class Enemy(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y):
-        super().__init__(enemy_group, all_sprites)
+        super().__init__(enemies_group, all_sprites)
         self.images = enemy_images
         self.image = make_img(self.images['stay'], width, height, MC_width, MC_height)
         self.rect = self.image.get_rect().move(
@@ -314,7 +305,7 @@ def level1(screen):
                 background = pygame.transform.scale(background, (new_SW, new_SH))
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
-                    MCBullet((MainCharacter.rect.x, MainCharacter.rect.y), MainCharacter.directory)
+                    MCBullet((MainCharacter.rect.x, MainCharacter.rect.y), event.pos)
 
         camera.update(MainCharacter)
         for sprite in all_sprites:
@@ -330,7 +321,7 @@ def level1(screen):
         player_group.draw(screen)
         MCbullet_group.update()
         MCbullet_group.draw(screen)
-        enemy_group.draw(screen)
+        enemies_group.draw(screen)
 
         pygame.display.flip()
         clock.tick(FPS)
@@ -355,10 +346,11 @@ all_sprites = pygame.sprite.Group()
 trees_group = pygame.sprite.Group()
 player_group = pygame.sprite.Group()
 MCbullet_group = pygame.sprite.Group()
-enemy_group = pygame.sprite.Group()
+enemies_group = pygame.sprite.Group()
 
 tile_images = {
-    'tree': load_image(r'game\tree.png')
+    'tree': load_image(r'game\tree.png'),
+    'MC_bullet': load_image(r'game\Bullet.png')
 }
 Ntrees_horz, Ntrees_vert = 30, 18
 background = pygame.transform.scale(load_image(r'game\background1.jpg'), (width, height))
@@ -368,10 +360,6 @@ player_images = {'f': load_image('game\MC_moving\MC_up.png'), 'd': load_image('g
                  'fr': load_image('game\MC_moving\MC_UR.png'), 'fl': load_image('game\MC_moving\MC_UL.png'),
                  'dr': load_image('game\MC_moving\MC_DR.png'), 'dl': load_image('game\MC_moving\MC_DL.png'),
                  'stay': load_image('game\MC_moving\MC_up.png')}
-MCbullet_images = {'f': load_image(r'game\MCBullet_moving\Bullet_up.png'), 'd': load_image(r'game\MCBullet_moving\Bullet_down.png'),
-                   'l': load_image(r'game\MCBullet_moving\Bullet_left.png'), 'r': load_image(r'game\MCBullet_moving\Bullet_right.png'),
-                   'fr': load_image(r'game\MCBullet_moving\Bullet_UR.png'), 'fl': load_image(r'game\MCBullet_moving\Bullet_UL.png'),
-                   'dr': load_image(r'game\MCBullet_moving\Bullet_DR.png'), 'dl': load_image(r'game\MCBullet_moving\Bullet_DL.png')}
 enemy_images = {'stay': load_image(r'game\enemy\EK.png')}
 
 MC_width, MC_height = 50, 70
@@ -380,7 +368,7 @@ MCbullet_width, MCbullet_height = 40, 40
 bullet_def_v = 20
 tree_width = tree_height = 100
 MainCharacter = Player(width // 2, height // 2)
-Enemys = Enemy(width // 2, height // 2)
+Enemies = Enemy(width // 2, height // 2)
 
 clock = pygame.time.Clock()
 FPS = 60
