@@ -26,7 +26,11 @@ def load_image(name, colorkey=None):
     return image
 
 
-def convert_gif(path):
+def convert_gif(name):
+    path = os.path.join(f'data\{name}')
+    if not os.path.isfile(path):
+        print(f"Файл с изображением '{path}' не найден")
+        sys.exit()
     gif = Image.open(path)
     frames = []
     while True:
