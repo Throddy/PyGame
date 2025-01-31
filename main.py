@@ -9,7 +9,7 @@ screen = pygame.display.set_mode(size, pygame.RESIZABLE, pygame.FULLSCREEN)
 
 
 def load_image(name, colorkey=None):
-    fullname = os.path.join(f'data\{name}')
+    fullname = os.path.join(f'data/{name}')
     if not os.path.isfile(fullname):
         print(f"Файл с изображением '{fullname}' не найден")
         sys.exit()
@@ -402,25 +402,25 @@ MCbullet_group = pygame.sprite.Group()
 enemy_group = pygame.sprite.Group()
 
 tile_images = {
-    'tree': load_image(r'game\tree.png')
+    'tree': load_image(r'game/tree.png')
 }
 Ntrees_horz, Ntrees_vert = 30, 18
-background = pygame.transform.scale(load_image(r'game\background1.jpg'), (width, height))
+background = pygame.transform.scale(load_image(r'game/background1.jpg'), (width, height))
 
-player_images = {'f': load_image('game\MC_moving\MC_up.png'), 'd': load_image('game\MC_moving\MC_down.png'),
-                 'l': load_image('game\MC_moving\MC_left.png'), 'r': load_image('game\MC_moving\MC_right.png'),
-                 'fr': load_image('game\MC_moving\MC_UR.png'), 'fl': load_image('game\MC_moving\MC_UL.png'),
-                 'dr': load_image('game\MC_moving\MC_DR.png'), 'dl': load_image('game\MC_moving\MC_DL.png'),
-                 'stay': load_image('game\MC_moving\MC_up.png')}
-MCbullet_images = {'f': load_image(r'game\MCBullet_moving\Bullet_up.png'),
-                   'd': load_image(r'game\MCBullet_moving\Bullet_down.png'),
-                   'l': load_image(r'game\MCBullet_moving\Bullet_left.png'),
-                   'r': load_image(r'game\MCBullet_moving\Bullet_right.png'),
-                   'fr': load_image(r'game\MCBullet_moving\Bullet_UR.png'),
-                   'fl': load_image(r'game\MCBullet_moving\Bullet_UL.png'),
-                   'dr': load_image(r'game\MCBullet_moving\Bullet_DR.png'),
-                   'dl': load_image(r'game\MCBullet_moving\Bullet_DL.png')}
-enemy_images = {'stay': load_image(r'game\enemy\EK.png')}
+player_images = {'f': load_image('game/MC_moving/MC_up.png'), 'd': load_image('game/MC_moving/MC_down.png'),
+                 'l': load_image('game/MC_moving/MC_left.png'), 'r': load_image('game/MC_moving/MC_right.png'),
+                 'fr': load_image('game/MC_moving/MC_UR.png'), 'fl': load_image('game/MC_moving/MC_UL.png'),
+                 'dr': load_image('game/MC_moving/MC_DR.png'), 'dl': load_image('game/MC_moving/MC_DL.png'),
+                 'stay': load_image('game/MC_moving/MC_up.png')}
+MCbullet_images = {'f': load_image(r'game/MCBullet_moving/Bullet_up.png'),
+                   'd': load_image(r'game/MCBullet_moving/Bullet_down.png'),
+                   'l': load_image(r'game/MCBullet_moving/Bullet_left.png'),
+                   'r': load_image(r'game/MCBullet_moving/Bullet_right.png'),
+                   'fr': load_image(r'game/MCBullet_moving/Bullet_UR.png'),
+                   'fl': load_image(r'game/MCBullet_moving/Bullet_UL.png'),
+                   'dr': load_image(r'game/MCBullet_moving/Bullet_DR.png'),
+                   'dl': load_image(r'game/MCBullet_moving/Bullet_DL.png')}
+enemy_images = {'stay': load_image(r'game/enemy/EK.png')}
 
 MC_width, MC_height = 50, 70
 mc_def_v = 10
