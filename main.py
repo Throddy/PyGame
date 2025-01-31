@@ -160,11 +160,13 @@ class Tree(pygame.sprite.Sprite):
 class Player(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y):
         super().__init__(player_group, all_sprites)
-        self.images = player_images
-        self.image = make_img(self.images['stay'], width, height, MC_width, MC_height)
+        self.frames = player_media['moving']
+        self.cur_frame = 0
+        self.angles = angles_dict
+        self.image = make_img(self.frames[self.cur_frame], width, height, MC_width, MC_height)
         self.rect = self.image.get_rect().move(
              pos_x + 15, pos_y + 5)
-        self.directory = 'f'
+        self.direction = 'f'
 
     def resize(self, SW, SH):
         global MC_width, MC_height, width, height
@@ -178,16 +180,18 @@ class Player(pygame.sprite.Sprite):
         if not keys[pygame.K_SPACE]:
             if keys[pygame.K_a]:
                 vx = -mc_def_v
-                l = 1
+                l = 'l'
             if keys[pygame.K_d]:
                 vx = mc_def_v
-                r = 1
+                r = 'r'
             if keys[pygame.K_w]:
                 vy = -mc_def_v
-                f = 1
+                f = 'f'
             if keys[pygame.K_s]:
                 vy = mc_def_v
-                d = 1
+                d = 'd'
+
+            cur_direction = f + d + l + r
 
             if abs(vx) == abs(vy) == mc_def_v:
                 vx = vx / (2 ** 0.5)
@@ -203,35 +207,43 @@ class Player(pygame.sprite.Sprite):
                 self.rect.y -= vy
                 vy = 0
 
+            self.cur_frame = (self.cur_frame + 1) % len(self.frames)
+            self.image = make_img(self.frames[self.cur_frame], width, height, MC_width, MC_height)
+            if cur_direction != self.direction:
+                self.image = pygame.transform.rotate(self.image, self.angles[cur_direction])
+            self.direction = cur_direction
+
+            """
             if f:
                 if r:
                     self.image = make_img(self.images['fr'], width, height, MC_width, MC_height)
-                    self.directory = 'fr'
+                    self.direction = 'fr'
                 elif l:
                     self.image = make_img(self.images['fl'], width, height, MC_width, MC_height)
-                    self.directory = 'fl'
+                    self.direction = 'fl'
                 else:
                     self.image = make_img(self.images['f'], width, height, MC_width, MC_height)
-                    self.directory = 'f'
+                    self.direction = 'f'
             elif d:
                 if r:
                     self.image = make_img(self.images['dr'], width, height, MC_width, MC_height)
-                    self.directory = 'dr'
+                    self.direction = 'dr'
                 elif l:
                     self.image = make_img(self.images['dl'], width, height, MC_width, MC_height)
-                    self.directory = 'dl'
+                    self.direction = 'dl'
                 else:
                     self.image = make_img(self.images['d'], width, height, MC_width, MC_height)
-                    self.directory = 'd'
+                    self.direction = 'd'
             elif r:
                 self.image = make_img(self.images['r'], width, height, MC_width, MC_height)
-                self.directory = 'r'
+                self.direction = 'r'
             elif l:
                 self.image = make_img(self.images['l'], width, height, MC_width, MC_height)
-                self.directory = 'l'
+                self.direction = 'l'
             else:
                 self.image = make_img(self.images['stay'], width, height, MC_width, MC_height)
-                self.directory = 'f'
+                self.direction = 'f'
+            """
 
         else:
             self.rect.x, self.rect.y = width // 2, height // 2
@@ -278,8 +290,7 @@ class Enemy(pygame.sprite.Sprite):
         self.image = make_img(self.images['stay'], width, height, MC_width, MC_height)
         self.rect = self.image.get_rect().move(
             pos_x + 15, pos_y + 5)
-        self.directory = 'f'
-        print(11111)
+        self.direction = 'f'
 
     def update(self, *args, **kwargs):
         ...
@@ -371,17 +382,21 @@ tile_images = {
     'tree': load_image(r'game\tree.png'),
     'MC_bullet': load_image(r'game\Bullet.png')
 }
-Ntrees_horz, Ntrees_vert = 30, 18
+
 background = pygame.transform.scale(load_image(r'game\background1.jpg'), (width, height))
 
 player_media = {'moving': convert_gif(r'game\MC_moving\MCwalk.gif')}
 enemy_images = {'stay': load_image(r'game\enemy\EK.png')}
+
+angles_dict = {'f': ...}
 
 MC_width, MC_height = 50, 70
 mc_def_v = 10
 MCbullet_width, MCbullet_height = 40, 40
 bullet_def_v = 20
 tree_width = tree_height = 100
+Ntrees_horz, Ntrees_vert = 30, 18
+
 MainCharacter = Player(width // 2, height // 2)
 Enemies = Enemy(width // 2, height // 2)
 
