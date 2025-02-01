@@ -296,6 +296,39 @@ class Villager(pygame.sprite.Sprite):
         MCbullet_width, MCbullet_height = new_W, new_H
 
 
+class Musketeer(pygame.sprite.Sprite):
+    def __init__(self, pos_x, pos_y):
+        super().__init__(enemy_group, all_sprites)
+        self.images = enemy_images
+        self.image = make_img(self.images['musketeer'], width, height, MC_width, MC_height)
+        self.rect = self.image.get_rect().move(
+            pos_x + 15, pos_y + 5)
+        self.directory = 'f'
+
+    def update(self, x2, y2, norm_v=3 / (2 ** 0.5)):
+        x1, y1 = self.rect.x, self.rect.y
+
+        perp_x = x2 - x1
+        perp_y = y2 - y1
+
+        dist = (perp_x ** 2 + perp_y ** 2) ** 0.5
+        if dist != 0:
+            vx = (perp_x / dist) * norm_v
+            vy = (perp_y / dist) * norm_v
+            if pygame.sprite.spritecollideany(self, MCbullet_group):
+                pygame.sprite.spritecollide(self, MCbullet_group, dokill=True)
+                self.kill()
+            else:
+                self.rect = self.rect.move(vx, vy)
+
+    def resize(self, SW, SH):
+        global MCbullet_width, MCbullet_height, width, height
+        new_W, new_H = MCbullet_width * (SW / width), MCbullet_height * (SH / height)
+        self.image = pygame.transform.scale(self.image,
+                                            (new_W, new_H))
+        MCbullet_width, MCbullet_height = new_W, new_H
+
+
 class Camera:
     def __init__(self):
         self.dx = 0
@@ -316,6 +349,7 @@ def level1(screen):
     camera = Camera()
     generate_enemies(3)
     n_enemies = 0
+    Musketeer(width, 0)
 
     while True:
         screen.fill('black')
@@ -418,7 +452,7 @@ MCbullet_images = {'f': load_image(r'game/MCBullet_moving/Bullet_up.png'),
                    'fl': load_image(r'game/MCBullet_moving/Bullet_UL.png'),
                    'dr': load_image(r'game/MCBullet_moving/Bullet_DR.png'),
                    'dl': load_image(r'game/MCBullet_moving/Bullet_DL.png')}
-enemy_images = {'stay': load_image(r'game/enemy/EK.png')}
+enemy_images = {'stay': load_image(r'game/enemy/EK.png'), 'musketeer': load_image(r'game/enemy/musketeer/musketeer0.png')}
 
 MC_width, MC_height = 50, 70
 mc_def_v = 10
