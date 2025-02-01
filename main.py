@@ -219,7 +219,7 @@ class Player(pygame.sprite.Sprite):
             self.rect.x, self.rect.y = width // 2, height // 2
 
 
-class MCBullet(pygame.sprite.Sprite):
+class Bullet(pygame.sprite.Sprite):
     def __init__(self, coords, dir):
         super().__init__(MCbullet_group, all_sprites)
         self.images = MCbullet_images
@@ -376,7 +376,7 @@ def level1(screen):
                 background = pygame.transform.scale(background, (new_SW, new_SH))
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
-                    MCBullet((MainCharacter.rect.x, MainCharacter.rect.y), MainCharacter.directory)
+                    Bullet((MainCharacter.rect.x, MainCharacter.rect.y), MainCharacter.directory)
 
         camera.update(MainCharacter)
         for sprite in all_sprites:
