@@ -432,14 +432,14 @@ MCbullet_group = pygame.sprite.Group()
 enemy_group = pygame.sprite.Group()
 
 tile_images = {
-    'tree': load_image(r'game\tree.png'),
-    'MC_bullet': load_image(r'game\Bullet.png')
+    'tree': load_image(r'game/tree.png'),
+    'MC_bullet': load_image(r'game/Bullet.png')
 }
 
-background = pygame.transform.scale(load_image(r'game\background1.jpg'), (width, height))
+background = pygame.transform.scale(load_image(r'game/background1.jpg'), (width, height))
 
-player_media = {'moving': convert_gif(r'game\MC_moving\MCwalk.gif')}
-enemy_images = {'stay': load_image(r'game\enemy\EK.png')}
+player_media = {'moving': convert_gif(r'game/MC_moving/MCwalk.gif')}
+enemy_images = {'stay': load_image(r'game/enemy/EK.png')}
 
 angles_dict = {'f': ...}
 
