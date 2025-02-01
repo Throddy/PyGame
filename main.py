@@ -271,25 +271,22 @@ class Enemy(pygame.sprite.Sprite):
         self.rect = self.image.get_rect().move(
             pos_x + 15, pos_y + 5)
         self.directory = 'f'
-        self.collide_MC = False
 
     def update(self, x2, y2, norm_v=3 / (2 ** 0.5)):
-        if not self.collide_MC:
-            x1, y1 = self.rect.x, self.rect.y
+        x1, y1 = self.rect.x, self.rect.y
 
-            perp_x = x2 - x1
-            perp_y = y2 - y1
+        perp_x = x2 - x1
+        perp_y = y2 - y1
 
-            dist = (perp_x ** 2 + perp_y ** 2) ** 0.5
-            if dist != 0:
-                vx = (perp_x / dist) * norm_v
-                vy = (perp_y / dist) * norm_v
-                if pygame.sprite.spritecollideany(self, MCbullet_group):
-                    self.collide_MC = True
-                else:
-                    self.rect = self.rect.move(vx, vy)
-        if self.collide_MC:
-            self.kill()
+        dist = (perp_x ** 2 + perp_y ** 2) ** 0.5
+        if dist != 0:
+            vx = (perp_x / dist) * norm_v
+            vy = (perp_y / dist) * norm_v
+            if pygame.sprite.spritecollideany(self, MCbullet_group):
+                pygame.sprite.spritecollide(self, MCbullet_group, dokill=True)
+                self.kill()
+            else:
+                self.rect = self.rect.move(vx, vy)
 
 
 class Camera:
