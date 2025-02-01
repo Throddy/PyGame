@@ -27,21 +27,41 @@ def load_image(name, colorkey=None):
 
 
 def convert_gif(name):
-    path = os.path.join(f'data\{name}')
+    path = os.path.join(f'data/{name}')  # Заменил \ на / для кроссплатформенности
     if not os.path.isfile(path):
         print(f"Файл с изображением '{path}' не найден")
         sys.exit()
+
     gif = Image.open(path)
     frames = []
+
+    # Определяем прозрачный цвет (если есть)
+    transparent_color = None
+    if gif.info.get("transparency") is not None:
+        transparent_color = gif.info["transparency"]
+
     while True:
-        frame = gif.copy().convert("RGBA")
-        pygame_frame = pygame.image.fromstring(frame.tobytes(), frame.size, "RGBA")
+        frame = gif.convert("RGBA")  # Преобразуем в RGBA
+
+        # Создаем новое изображение с прозрачностью
+        new_frame = Image.new("RGBA", frame.size, (0, 0, 0, 0))
+
+        # Копируем пиксели, игнорируя фон
+        for x in range(frame.width):
+            for y in range(frame.height):
+                pixel = frame.getpixel((x, y))
+                if transparent_color is None or pixel[:3] != (transparent_color, transparent_color, transparent_color):
+                    new_frame.putpixel((x, y), pixel)
+
+        # Преобразуем в Pygame-совместимый формат
+        pygame_frame = pygame.image.fromstring(new_frame.tobytes(), new_frame.size, "RGBA")
         frames.append(pygame_frame)
 
         try:
             gif.seek(gif.tell() + 1)
         except EOFError:
             break
+
     return frames
 
 
@@ -160,13 +180,19 @@ class Tree(pygame.sprite.Sprite):
 class Player(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y):
         super().__init__(player_group, all_sprites)
-        self.frames = player_media['moving']
+        self.frames_amount = len(player_media['moving'])
+        self.frames = {'l': player_media['moving'],
+                       'r': list(map(lambda pic:
+                                     pygame.transform.flip(pic, True, False),
+                                     player_media['moving']))}
         self.cur_frame = 0
-        self.angles = angles_dict
-        self.image = make_img(self.frames[self.cur_frame], width, height, MC_width, MC_height)
+        self.frame_delay = 3
+        self.time_counter = 0
+        self.save_dir = 'r'
+        self.image = make_img(self.frames[self.save_dir][0], width, height, MC_width, MC_height)
         self.rect = self.image.get_rect().move(
              pos_x + 15, pos_y + 5)
-        self.direction = 'f'
+        self.prev_direction = ''
 
     def resize(self, SW, SH):
         global MC_width, MC_height, width, height
@@ -176,7 +202,7 @@ class Player(pygame.sprite.Sprite):
         MC_width, MC_height = new_W, new_H
 
     def update(self, keys, vx=0, vy=0):
-        l, r, f, d = 0, 0, 0, 0
+        l, r, f, d = '', '', '', ''
         if not keys[pygame.K_SPACE]:
             if keys[pygame.K_a]:
                 vx = -mc_def_v
@@ -191,7 +217,7 @@ class Player(pygame.sprite.Sprite):
                 vy = mc_def_v
                 d = 'd'
 
-            cur_direction = f + d + l + r
+            cur_direction = l + r + f + d
 
             if abs(vx) == abs(vy) == mc_def_v:
                 vx = vx / (2 ** 0.5)
@@ -207,43 +233,25 @@ class Player(pygame.sprite.Sprite):
                 self.rect.y -= vy
                 vy = 0
 
-            self.cur_frame = (self.cur_frame + 1) % len(self.frames)
-            self.image = make_img(self.frames[self.cur_frame], width, height, MC_width, MC_height)
-            if cur_direction != self.direction:
-                self.image = pygame.transform.rotate(self.image, self.angles[cur_direction])
-            self.direction = cur_direction
-
-            """
-            if f:
-                if r:
-                    self.image = make_img(self.images['fr'], width, height, MC_width, MC_height)
-                    self.direction = 'fr'
-                elif l:
-                    self.image = make_img(self.images['fl'], width, height, MC_width, MC_height)
-                    self.direction = 'fl'
+            self.time_counter += 1
+            if self.time_counter >= self.frame_delay:
+                self.cur_frame = (self.cur_frame + 1) % self.frames_amount
+                if cur_direction not in 'fd ':
+                    self.image = make_img(self.frames[cur_direction[0]][self.cur_frame], width, height, MC_width, MC_height)
                 else:
-                    self.image = make_img(self.images['f'], width, height, MC_width, MC_height)
-                    self.direction = 'f'
-            elif d:
-                if r:
-                    self.image = make_img(self.images['dr'], width, height, MC_width, MC_height)
-                    self.direction = 'dr'
-                elif l:
-                    self.image = make_img(self.images['dl'], width, height, MC_width, MC_height)
-                    self.direction = 'dl'
-                else:
-                    self.image = make_img(self.images['d'], width, height, MC_width, MC_height)
-                    self.direction = 'd'
-            elif r:
-                self.image = make_img(self.images['r'], width, height, MC_width, MC_height)
-                self.direction = 'r'
-            elif l:
-                self.image = make_img(self.images['l'], width, height, MC_width, MC_height)
-                self.direction = 'l'
-            else:
-                self.image = make_img(self.images['stay'], width, height, MC_width, MC_height)
-                self.direction = 'f'
-            """
+                    if cur_direction in 'fd':
+                        if self.prev_direction not in 'fd ': # не пауза фд == норм двиэ
+                            self.save_dir = self.prev_direction
+                            self.image = make_img(self.frames[self.save_dir[0]][self.cur_frame], width, height, MC_width, MC_height)
+                        elif self.prev_direction not in ' ':    # == fd
+                            self.image = make_img(self.frames[self.save_dir[0]][self.cur_frame], width, height, MC_width, MC_height)
+                        else:
+                            self.cur_frame = 0
+                            self.image = make_img(self.frames[self.save_dir[0]][self.cur_frame], width, height, MC_width, MC_height)
+                    else:
+                        self.image = make_img(self.frames[self.save_dir[0]][0], width, height, MC_width, MC_height)
+                self.prev_direction = cur_direction
+                self.time_counter = 0
 
         else:
             self.rect.x, self.rect.y = width // 2, height // 2
@@ -391,7 +399,7 @@ enemy_images = {'stay': load_image(r'game\enemy\EK.png')}
 angles_dict = {'f': ...}
 
 MC_width, MC_height = 50, 70
-mc_def_v = 10
+mc_def_v = 7
 MCbullet_width, MCbullet_height = 40, 40
 bullet_def_v = 20
 tree_width = tree_height = 100
