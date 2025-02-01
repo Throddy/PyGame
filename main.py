@@ -220,8 +220,11 @@ class Player(pygame.sprite.Sprite):
 
 
 class Bullet(pygame.sprite.Sprite):
-    def __init__(self, coords, dir):
-        super().__init__(MCbullet_group, all_sprites)
+    def __init__(self, coords, dir, mc=True):
+        if mc:
+            super().__init__(MCbullet_group, all_sprites)
+        else:
+            super().__init__(enemies_bullet_group, all_sprites)
         self.images = MCbullet_images
         self.dir = dir
         self.image = make_img(self.images[self.dir], width, height, MCbullet_width, MCbullet_height)
@@ -312,6 +315,20 @@ class Musketeer(pygame.sprite.Sprite):
         perp_y = y2 - y1
 
         dist = (perp_x ** 2 + perp_y ** 2) ** 0.5
+        if dist < 1000:
+            if perp_x == 0:
+                direction = 'f' if perp_y < 0 else 'd'
+            elif perp_x > 0:
+                if perp_y == 0:
+                    direction = 'r'
+                else:
+                    direction = 'dr' if perp_y > 0 else 'fr'
+            else:
+                if perp_y == 0:
+                    direction = 'l'
+                else:
+                    direction = 'dl' if perp_y > 0 else 'fl'
+            Bullet((x1, y1), direction, False)
         if dist != 0:
             vx = (perp_x / dist) * norm_v
             vy = (perp_y / dist) * norm_v
@@ -394,6 +411,8 @@ def level1(screen):
         MCbullet_group.draw(screen)
         enemy_group.update(MainCharacter.rect.x, MainCharacter.rect.y)
         enemy_group.draw(screen)
+        enemies_bullet_group.update()
+        enemies_bullet_group.draw(screen)
 
         pygame.display.flip()
         clock.tick(FPS)
@@ -432,6 +451,7 @@ trees_group = pygame.sprite.Group()
 player_group = pygame.sprite.Group()
 MCbullet_group = pygame.sprite.Group()
 enemy_group = pygame.sprite.Group()
+enemies_bullet_group = pygame.sprite.Group()
 
 tile_images = {
     'tree': load_image(r'game/tree.png')
