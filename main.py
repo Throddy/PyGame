@@ -451,7 +451,6 @@ tree_width = tree_height = 100
 Ntrees_horz, Ntrees_vert = 30, 18
 
 MainCharacter = Player(width // 2, height // 2)
-Enemies = Enemy(width // 2, height // 2)
 
 clock = pygame.time.Clock()
 FPS = 60
