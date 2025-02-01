@@ -288,6 +288,13 @@ class Enemy(pygame.sprite.Sprite):
             else:
                 self.rect = self.rect.move(vx, vy)
 
+    def resize(self, SW, SH):
+        global MCbullet_width, MCbullet_height, width, height
+        new_W, new_H = MCbullet_width * (SW / width), MCbullet_height * (SH / height)
+        self.image = pygame.transform.scale(self.image,
+                                            (new_W, new_H))
+        MCbullet_width, MCbullet_height = new_W, new_H
+
 
 class Camera:
     def __init__(self):
