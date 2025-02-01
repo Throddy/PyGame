@@ -172,8 +172,8 @@ class Player(pygame.sprite.Sprite):
                 d = 1
 
             if abs(vx) == abs(vy) == mc_def_v:
-                vx = vx / (2 ** 0.5)
-                vy = vy / (2 ** 0.5)
+                vx = vx / (2 ** 0.5) + 1
+                vy = vy / (2 ** 0.5) + 1
 
             self.rect.x += vx
             if pygame.sprite.spritecollideany(self, trees_group):
@@ -272,7 +272,6 @@ class Enemy(pygame.sprite.Sprite):
             pos_x + 15, pos_y + 5)
         self.directory = 'f'
         self.collide_MC = False
-        print(11111)
 
     def update(self, x2, y2, norm_v=3 / (2 ** 0.5)):
         if not self.collide_MC:
@@ -285,12 +284,7 @@ class Enemy(pygame.sprite.Sprite):
             if dist != 0:
                 vx = (perp_x / dist) * norm_v
                 vy = (perp_y / dist) * norm_v
-                collided_enemies = pygame.sprite.spritecollide(self, enemy_group, False)
-                if len(collided_enemies) > 1:
-                    vx += abs(collided_enemies[1].rect.x - x1 - 15 * norm_v)
-                    vy += abs(collided_enemies[1].rect.y - y1 - 25 * norm_v)
-                    self.rect = self.rect.move(vx, vy)
-                elif pygame.sprite.spritecollideany(self, MCbullet_group):
+                if pygame.sprite.spritecollideany(self, MCbullet_group):
                     self.collide_MC = True
                 else:
                     self.rect = self.rect.move(vx, vy)
