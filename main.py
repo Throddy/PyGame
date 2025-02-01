@@ -263,7 +263,7 @@ class MCBullet(pygame.sprite.Sprite):
             self.rect.y += self.vy
 
 
-class Enemy(pygame.sprite.Sprite):
+class Villager(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y):
         super().__init__(enemy_group, all_sprites)
         self.images = enemy_images
@@ -314,8 +314,8 @@ def level1(screen):
     global background, width, height
     resized_flag = False
     camera = Camera()
-    generate_enemys(3)
-    n_enemys = 0
+    generate_enemies(3)
+    n_enemies = 0
 
     while True:
         screen.fill('black')
@@ -323,10 +323,10 @@ def level1(screen):
         keys = pygame.key.get_pressed()
         generate_borders(width, height)
 
-        if n_enemys < 15:
+        if n_enemies < 15:
             if len(enemy_group) < 2:
-                generate_enemys(n := randint(1, 5))
-                n_enemys += n
+                generate_enemies(n := randint(1, 5))
+                n_enemies += n
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -380,17 +380,17 @@ def generate_borders(w, h):
         Tree(w - tree_width, i * vert_step)
 
 
-def generate_enemys(n):
+def generate_enemies(n):
     for _ in range(n):
         side = randint(1, 4)
         if side == 1:
-            Enemy(0, randint(0, height))
+            Villager(0, randint(0, height))
         elif side == 2:
-            Enemy(randint(0, width), 0)
+            Villager(randint(0, width), 0)
         elif side == 4:
-            Enemy(width, randint(0, height))
+            Villager(width, randint(0, height))
         else:
-            Enemy(randint(0, width), height)
+            Villager(randint(0, width), height)
 
 
 all_sprites = pygame.sprite.Group()
