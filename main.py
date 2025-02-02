@@ -127,9 +127,44 @@ def start_screen():
                 if event.button == 1:
                     if pygame.sprite.spritecollideany(start_button, cursor_group):
                         cursor.kill()
+                        button_group.empty()
                         return
                     if pygame.sprite.spritecollideany(exit_button, cursor_group):
                         terminate()
+
+            if event.type == pygame.MOUSEMOTION:
+                cords = event.pos
+                flag = pygame.mouse.get_focused()
+                cursor.rect.x, cursor.rect.y = cords
+        button_group.update()
+        button_group.draw(screen)
+        cursor_group.draw(screen)
+        pygame.display.flip()
+        clock.tick(FPS)
+
+
+def comic():
+    cursor = Cursor()
+    all_sprites.add(cursor)
+    cursor_group.add(cursor)
+    flag = True
+    pygame.mouse.set_visible(False)
+    start_button = Button(0, 700, (300, 80))
+    start_button.set_image('start_screen/startbutton/sprite_0.png')
+
+    while True:
+        screen.fill(pygame.Color('black'))
+        fon = pygame.transform.scale(load_image('start_screen/comic.png'), (width, height))
+        screen.blit(fon, (0, 0))
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                terminate()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    if pygame.sprite.spritecollideany(start_button, cursor_group):
+                        cursor.kill()
+                        return
 
             if event.type == pygame.MOUSEMOTION:
                 cords = event.pos
@@ -770,6 +805,7 @@ player, level_x, level_y = generate_level(load_level('lvl1.txt'))
 
 if __name__ == '__main__':
     start_screen()
+    comic()
     level1(screen)
     final_screen()
     terminate()
