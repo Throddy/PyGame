@@ -644,11 +644,11 @@ class Camera:
         self.dy = 0  # -(target.rect.y + target.rect.h // 2 - height // 2) - tile_height
 
 
-def level1(screen):
+def wave1(screen):
     global background, width, height
     resized_flag = False
     camera = Camera()
-    generate_enemies(3)
+    generate_enemies(3, Villager)
     n_enemies = 0
     # Musketeer(500, 500)
     # Magician(600, 600)
@@ -662,8 +662,83 @@ def level1(screen):
 
         if n_enemies < 15:
             if len(enemy_group) < 2:
-                generate_enemies(n := randint(1, 5))
+                generate_enemies(n := randint(1, 5), Villager)
                 n_enemies += n
+        else:
+            if len(enemy_group) == 0:
+                for tree in trees_group:
+                    if (tree.rect.x == width - tree_width and
+                            (height // 2 - tree_height) <= tree.rect.y <= (height // 2 + tree_height)):
+                        tree.kill()
+            if MainCharacter.rect.x > width:
+                wave2(screen)
+                return
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                terminate()
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_q:
+                return
+            if event.type == pygame.VIDEORESIZE:
+                new_width = max(event.w, min_width)
+                new_height = max(event.h, min_height)
+                screen = pygame.display.set_mode((new_width, new_height), pygame.RESIZABLE)
+                resized_flag = True
+                new_SW, new_SH = new_width, new_height
+                background = pygame.transform.scale(background, (new_SW, new_SH))
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    Bullet((MainCharacter.rect.x, MainCharacter.rect.y), event.pos)
+
+        camera.update(MainCharacter)
+        for sprite in all_sprites:
+            if resized_flag:
+                sprite.resize(new_SW, new_SH)
+            camera.apply(sprite)
+        if resized_flag:
+            width, height = new_SW, new_SH
+        resized_flag = False
+
+        trees_group.draw(screen)
+        player_group.update(keys)
+        player_group.draw(screen)
+        MCbullet_group.update()
+        MCbullet_group.draw(screen)
+        enemy_group.update(MainCharacter.rect.x, MainCharacter.rect.y)
+        enemy_group.draw(screen)
+        draw_hp_bar(screen, 25, 25, MainCharacter.hp)
+
+        pygame.display.flip()
+        clock.tick(FPS)
+
+
+def wave2(screen):
+    global width, height, background
+    resized_flag = False
+    camera = Camera()
+    generate_enemies(3, Musketeer)
+    n_enemies = 0
+    MainCharacter.rect.x, MainCharacter.rect.y = width // 2, height // 2
+    # Musketeer(500, 500)
+    # Magician(600, 600)
+
+    pygame.mouse.set_visible(True)
+    while True:
+        screen.fill('black')
+        screen.blit(background, (0, 0))
+        keys = pygame.key.get_pressed()
+        generate_borders(width, height)
+
+        if n_enemies < 15:
+            if len(enemy_group) < 2:
+                generate_enemies(n := randint(1, 5), Musketeer)
+                n_enemies += n
+        else:
+            if len(enemy_group) == 0:
+                for tree in trees_group:
+                    if (tree.rect.x == width - tree_width and
+                            (height // 2 - tree_height) <= tree.rect.y <= (height // 2 + tree_height)):
+                        tree.kill()
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -699,8 +774,6 @@ def level1(screen):
         enemy_group.draw(screen)
         musketeer_bullet_group.update()
         musketeer_bullet_group.draw(screen)
-        magician_bullet_group.update()
-        magician_bullet_group.draw(screen)
         draw_hp_bar(screen, 25, 25, MainCharacter.hp)
 
         pygame.display.flip()
@@ -722,17 +795,17 @@ def generate_borders(w, h):
         Tree(w - tree_width, i * vert_step)
 
 
-def generate_enemies(n):
+def generate_enemies(n, enemy):
     for _ in range(n):
         side = randint(1, 4)
         if side == 1:
-            Villager(0, randint(0, height))
+            enemy(0, randint(0, height))
         elif side == 2:
-            Villager(randint(0, width), 0)
+            enemy(randint(0, width), 0)
         elif side == 4:
-            Villager(width, randint(0, height))
+            enemy(width, randint(0, height))
         else:
-            Villager(randint(0, width), height)
+            enemy(randint(0, width), height)
 
 
 def draw_hp_bar(screen, x, y, pct):
@@ -806,6 +879,6 @@ player, level_x, level_y = generate_level(load_level('lvl1.txt'))
 if __name__ == '__main__':
     start_screen()
     comic()
-    level1(screen)
+    wave1(screen)
     final_screen()
     terminate()
