@@ -184,6 +184,7 @@ def comic():
 
 
 def bad_end():
+    global cur_wave
     button_group.empty()
     cursor_group.empty()
     cursor = Cursor()
@@ -209,6 +210,7 @@ def bad_end():
                     if pygame.sprite.spritecollideany(start_button, cursor_group):
                         cursor.kill()
                         button_group.empty()
+                        cur_wave = 0
                         return
                     if pygame.sprite.spritecollideany(exit_button, cursor_group):
                         terminate()
