@@ -199,7 +199,8 @@ def bad_end():
 
     while True:
         screen.fill(pygame.Color('black'))
-
+        fon = pygame.transform.scale(load_image('start_screen/game_over.jpeg'), (width, height))
+        screen.blit(fon, (0, 0))
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
@@ -843,7 +844,7 @@ tree_width = tree_height = 100
 Ntrees_horz, Ntrees_vert = 30, 18
 
 MC_hp, Vil_hp, Musk_hp, Mag_hp = 100, 100, 75, 150
-MC_damage, Vil_damage, Musk_damage, Mag_damage = 10, 10, 10, 10
+MC_damage, Vil_damage, Musk_damage, Mag_damage = 10, 50, 10, 10
 v_damage_delay = 120
 
 firing_range = 250
