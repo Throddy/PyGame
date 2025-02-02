@@ -293,6 +293,7 @@ class Bullet(pygame.sprite.Sprite):
 
         self.angle = degrees(atan2(-vy, vx))
         self.image = pygame.transform.rotate(self.image, self.angle)
+        self.dist = 0
 
     def resize(self, SW, SH):
         global MCbullet_width, MCbullet_height, width, height
@@ -302,10 +303,13 @@ class Bullet(pygame.sprite.Sprite):
         MCbullet_width, MCbullet_height = new_W, new_H
 
     def update(self):
+        if self.dist > firing_range:
+            self.kill()
         if not -MCbullet_width <= self.rect.x <= width + MCbullet_width or \
                 not -MCbullet_height <= self.rect.y <= height + MCbullet_height:
             self.kill()
         else:
+            self.dist += hypot(self.rect.x - (self.rect.x + self.vx), self.rect.y - (self.rect.y + self.vy))
             self.rect.x += self.vx
             self.rect.y += self.vy
 
@@ -629,6 +633,8 @@ MCbullet_width, MCbullet_height = 40, 40
 bullet_def_v = 20
 tree_width = tree_height = 100
 Ntrees_horz, Ntrees_vert = 30, 18
+
+firing_range = 250
 
 MainCharacter = Player(width // 2, height // 2)
 
