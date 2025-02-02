@@ -795,10 +795,10 @@ def update_level(screen, enemy):
         musketeer_bullet_group.draw(screen)
         magician_bullet_group.update()
         magician_bullet_group.draw(screen)
-        draw_hp_bar(screen, 25, 25, MainCharacter.hp)
+        draw_hp_bar(MainCharacter, MainCharacter.rect.x, MainCharacter.rect.y, MainCharacter.hp)
         for sprite in all_sprites:
             if sprite in enemy_group:
-                enemy_hp_bar(sprite, sprite.rect.x, sprite.rect.y, sprite.hp)
+                draw_hp_bar(sprite, sprite.rect.x, sprite.rect.y, sprite.hp)
 
         pygame.display.flip()
         clock.tick(FPS)
@@ -832,34 +832,25 @@ def generate_enemies(n, enemy):
             enemy(randint(0, width), height)
 
 
-def draw_hp_bar(screen, x, y, pct):
-    if pct < 0:
-        pct = 0
-    heart = tile_images['heart']
-    screen.blit(heart, (0, 20))
-    fill = (pct / 100) * HORSE_BAR_LENGTH
-    outline_rect = pygame.Rect(x, y, HORSE_BAR_LENGTH, HORSE_BAR_HEIGHT)
-    fill_rect = pygame.Rect(x, y, fill, HORSE_BAR_HEIGHT)
-    pygame.draw.rect(screen, 'green', fill_rect)
-    pygame.draw.rect(screen, 'white', outline_rect, 2)
-
-
-def enemy_hp_bar(self, x, y, cur_hp):
-    if isinstance(self, Villager):
-        color = 'purple'
+def draw_hp_bar(self, x, y, cur_hp):
+    if type(self) is Villager:
+        color1, color2 = 'purple', 'black'
         hp = Vil_hp
-    elif isinstance(self, Magician):
-        color = 'red'
-        hp = Mag_hp
-    elif isinstance(self, Musketeer):
-        color = 'pink'
+    elif type(self) is Musketeer:
+        color1, color2 = 'pink', 'black'
         hp = Musk_hp
+    elif type(self) is Magician:
+        color1, color2 = 'red', 'black'
+        hp = Mag_hp
+    elif type(self) is Player:
+        color1, color2 = 'green', 'white'
+        hp = MC_hp
 
-    outline_rect = pygame.Rect(x, y - ENEMY_BAR_HEIGHT * 2, ENEMY_BAR_LENGTH, ENEMY_BAR_HEIGHT)
-    cur_hp = (cur_hp / hp) * ENEMY_BAR_LENGTH
-    fill_rect = pygame.Rect(x, y - ENEMY_BAR_HEIGHT * 2, cur_hp, ENEMY_BAR_HEIGHT)
-    pygame.draw.rect(screen, color, fill_rect)
-    pygame.draw.rect(screen, 'black', outline_rect, 1)
+    outline_rect = pygame.Rect(x, y - BAR_HEIGHT * 2, BAR_LENGTH, BAR_HEIGHT)
+    cur_hp = (cur_hp / hp) * BAR_LENGTH
+    fill_rect = pygame.Rect(x, y - BAR_HEIGHT * 2, cur_hp, BAR_HEIGHT)
+    pygame.draw.rect(screen, color1, fill_rect)
+    pygame.draw.rect(screen, color2, outline_rect, 1)
 
 
 all_sprites = pygame.sprite.Group()
@@ -872,14 +863,10 @@ musketeer_bullet_group = pygame.sprite.Group()
 magician_bullet_group = pygame.sprite.Group()
 button_group = pygame.sprite.Group()
 
-HORSE_BAR_LENGTH, HORSE_BAR_HEIGHT = 200, 20
-
 tile_images = {
     'tree': load_image(r'game/tree.png'),
     'MC_bullet': load_image(r'game/Bullet.png'),
-    'magician_bullet': load_image(r'game/magic_bullet.png'),
-    'heart': pygame.transform.scale(load_image(r'game/heart.png'), (HORSE_BAR_HEIGHT + 10, HORSE_BAR_HEIGHT + 10))
-}
+    'magician_bullet': load_image(r'game/magic_bullet.png')}
 
 background = pygame.transform.scale(load_image(r'game/background1.jpg'), (width, height))
 
@@ -911,7 +898,7 @@ enemies_firing_range = 250
 MC_firing_range = 300
 musketeer_firing_delay = 300
 
-ENEMY_BAR_LENGTH, ENEMY_BAR_HEIGHT = UNIT_width, 10
+BAR_LENGTH, BAR_HEIGHT = UNIT_width, 10
 
 waves = [wave1, wave2, wave3]
 cur_wave = 0
