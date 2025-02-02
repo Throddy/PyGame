@@ -106,6 +106,10 @@ def start_screen():
     cursor_group.add(cursor)
     flag = True
     pygame.mouse.set_visible(False)
+
+    title = Button(410, 10, (550, 120))
+    title.set_image('start_screen/title/title_0.png')
+
     start_button = Button(500, 200, (350, 100))
     start_button.set_image('start_screen/startbutton/sprite_0.png')
 
