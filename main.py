@@ -3,7 +3,6 @@ from random import randint
 from PIL import Image
 from math import atan2, hypot, degrees
 
-
 pygame.init()
 pygame.display.set_caption('Walking')
 size = width, height = 1400, 800
@@ -202,12 +201,12 @@ class Player(pygame.sprite.Sprite):
                                      pygame.transform.flip(pic, True, False),
                                      player_media['moving']))}
         self.cur_frame = 0
-        self.frame_delay = 3
+        self.frame_delay = 8
         self.time_counter = 0
         self.save_dir = 'r'
         self.image = make_img(self.frames[self.save_dir][0], width, height, MC_width, MC_height)
         self.rect = self.image.get_rect().move(
-             pos_x + 15, pos_y + 5)
+            pos_x + 15, pos_y + 5)
         self.prev_direction = ''
 
     def resize(self, SW, SH):
@@ -253,17 +252,21 @@ class Player(pygame.sprite.Sprite):
             if self.time_counter >= self.frame_delay:
                 self.cur_frame = (self.cur_frame + 1) % self.frames_amount
                 if cur_direction not in 'fd ':
-                    self.image = make_img(self.frames[cur_direction[0]][self.cur_frame], width, height, MC_width, MC_height)
+                    self.image = make_img(self.frames[cur_direction[0]][self.cur_frame], width, height, MC_width,
+                                          MC_height)
                 else:
                     if cur_direction in 'fd':
-                        if self.prev_direction not in 'fd ': # не пауза фд == норм двиэ
+                        if self.prev_direction not in 'fd ':  # не пауза фд == норм двиэ
                             self.save_dir = self.prev_direction
-                            self.image = make_img(self.frames[self.save_dir[0]][self.cur_frame], width, height, MC_width, MC_height)
-                        elif self.prev_direction not in ' ':    # == fd
-                            self.image = make_img(self.frames[self.save_dir[0]][self.cur_frame], width, height, MC_width, MC_height)
+                            self.image = make_img(self.frames[self.save_dir[0]][self.cur_frame], width, height,
+                                                  MC_width, MC_height)
+                        elif self.prev_direction not in ' ':  # == fd
+                            self.image = make_img(self.frames[self.save_dir[0]][self.cur_frame], width, height,
+                                                  MC_width, MC_height)
                         else:
                             self.cur_frame = 0
-                            self.image = make_img(self.frames[self.save_dir[0]][self.cur_frame], width, height, MC_width, MC_height)
+                            self.image = make_img(self.frames[self.save_dir[0]][self.cur_frame], width, height,
+                                                  MC_width, MC_height)
                     else:
                         self.image = make_img(self.frames[self.save_dir[0]][0], width, height, MC_width, MC_height)
                 self.prev_direction = cur_direction
@@ -323,7 +326,7 @@ class Villager(pygame.sprite.Sprite):
                                      pygame.transform.flip(pic, True, False),
                                      villager_media['moving']))}
         self.cur_frame = 0
-        self.frame_delay = 3
+        self.frame_delay = 15
         self.time_counter = 0
         self.save_dir = 'r'
         self.image = make_img(self.frames[self.save_dir][0], width, height, MC_width, MC_height)
@@ -398,7 +401,7 @@ class Musketeer(pygame.sprite.Sprite):
                                      pygame.transform.flip(pic, True, False),
                                      musketeer_media['moving']))}
         self.cur_frame = 0
-        self.frame_delay = 3
+        self.frame_delay = 15
         self.time_counter = 0
         self.save_dir = 'r'
         self.image = make_img(self.frames[self.save_dir][0], width, height, MC_width, MC_height)
@@ -476,7 +479,7 @@ class Button(pygame.sprite.Sprite):
     def set_image(self, way):
         self.way = way
         self.image = load_image(way)
-        self.image = pygame.transform.scale(self.image,(self.size[0], self.size[1]))
+        self.image = pygame.transform.scale(self.image, (self.size[0], self.size[1]))
         self.rect = self.image.get_rect().move(self.pos_x + 15, self.pos_y + 5)
 
     def resize(self, SW, SH):
@@ -620,14 +623,14 @@ tile_images = {
 
 background = pygame.transform.scale(load_image(r'game/background1.jpg'), (width, height))
 
-player_media = {'moving': [load_image(f'/game/horse/horse_{i}.png')for i in range(6)]}
-villager_media = {'moving': [load_image(f'/game/enemy/villager/sprite_{i}.png')for i in range(4)]}
-musketeer_media = {'moving': [load_image(f'/game/enemy/musketeer/musketeer{i}.png')for i in range(4)]}
+player_media = {'moving': [load_image(f'/game/horse/horse_{i}.png') for i in range(6)]}
+villager_media = {'moving': [load_image(f'/game/enemy/villager/sprite_{i}.png') for i in range(4)]}
+musketeer_media = {'moving': [load_image(f'/game/enemy/musketeer/musketeer{i}.png') for i in range(4)]}
 enemy_images = {'stay': load_image(r'game/enemy/EK.png')}
 
 angles_dict = {'f': ...}
 
-MC_width, MC_height = 50, 70
+MC_width, MC_height = 80, 80
 mc_def_v = 7
 MCbullet_width, MCbullet_height = 40, 40
 bullet_def_v = 20
@@ -644,7 +647,6 @@ FPS = 60
 """
 player, level_x, level_y = generate_level(load_level('lvl1.txt'))
 """
-
 
 if __name__ == '__main__':
     start_screen()
