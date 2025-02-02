@@ -1,7 +1,7 @@
 import pygame, os, sys
 from random import randint
 from PIL import Image
-from math import *
+from math import atan2, hypot, degrees
 
 
 pygame.init()
