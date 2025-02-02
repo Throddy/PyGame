@@ -215,6 +215,7 @@ class Player(pygame.sprite.Sprite):
         self.prev_direction = ''
         self.hp = MC_hp
         self.hit = False
+        self.time = 0
 
     def resize(self, SW, SH):
         global MC_width, MC_height, width, height
@@ -226,10 +227,16 @@ class Player(pygame.sprite.Sprite):
     def update(self, keys, vx=0, vy=0):
         if self.hp <= 0:
             self.kill()
+        if pygame.sprite.spritecollide(self, musketeer_bullet_group, dokill=True):
+            self.hit = True
+            self.hp -= Musk_damage
         if pygame.sprite.spritecollide(self, magician_bullet_group, dokill=True):
             self.hit = True
-            self.hp -= 10
-            print(self.hp)
+            self.hp -= Mag_damage
+        if pygame.sprite.spritecollideany(self, enemy_group) and self.time >= v_damage_delay:
+            self.hit = True
+            self.hp -= Vil_damage
+            self.time = 0
 
         l, r, f, d = '', '', '', ''
         if not keys[pygame.K_SPACE]:
@@ -293,6 +300,7 @@ class Player(pygame.sprite.Sprite):
 
         else:
             self.rect.x, self.rect.y = width // 2, height // 2
+        self.time += 1
 
 
 class Bullet(pygame.sprite.Sprite):
@@ -369,7 +377,7 @@ class Villager(pygame.sprite.Sprite):
 
         if pygame.sprite.spritecollide(self, MCbullet_group, dokill=True):
             self.hit = True
-            self.hp -= 10
+            self.hp -= MC_damage
 
         x1, y1 = self.rect.x, self.rect.y
 
@@ -462,7 +470,7 @@ class Musketeer(pygame.sprite.Sprite):
 
         if pygame.sprite.spritecollide(self, MCbullet_group, dokill=True):
             self.hit = True
-            self.hp -= 10
+            self.hp -= MC_damage
 
         x1, y1 = self.rect.x, self.rect.y
 
@@ -607,8 +615,8 @@ def level1(screen):
     camera = Camera()
     generate_enemies(3)
     n_enemies = 0
-    Musketeer(500, 500)
-    Magician(600, 600)
+    # Musketeer(500, 500)
+    # Magician(600, 600)
 
     pygame.mouse.set_visible(True)
     while True:
@@ -745,6 +753,8 @@ tree_width = tree_height = 100
 Ntrees_horz, Ntrees_vert = 30, 18
 
 MC_hp, Vil_hp, Musk_hp, Mag_hp = 100, 100, 75, 150
+MC_damage, Vil_damage, Musk_damage, Mag_damage = 10, 10, 10, 10
+v_damage_delay = 120
 
 firing_range = 250
 musketeer_firing_delay = 60
