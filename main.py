@@ -277,12 +277,16 @@ class Player(pygame.sprite.Sprite):
 
 
 class Bullet(pygame.sprite.Sprite):
-    def __init__(self, MC_coords, mouse_coords, enemy=False):
+    def __init__(self, MC_coords, mouse_coords, enemy=''):
         if not enemy:
             super().__init__(MCbullet_group, all_sprites)
+            self.image = tile_images['MC_bullet']
+        elif enemy == 'Musketeer':
+            super().__init__(musketeer_bullet_group, all_sprites)
+            self.image = tile_images['MC_bullet']
         else:
-            super().__init__(enemies_bullet_group, all_sprites)
-        self.image = tile_images['MC_bullet']
+            super().__init__(magician_bullet_group, all_sprites)
+            self.image = tile_images['magician_bullet']
         self.image = make_img(self.image, width, height, MCbullet_width, MCbullet_height)
         self.rect = self.image.get_rect().move(
             MC_coords[0] + MCbullet_width // 5.5, MC_coords[1] + MCbullet_height // 2)
@@ -474,7 +478,7 @@ class Musketeer(pygame.sprite.Sprite):
         x1, y1 = self.rect.x, self.rect.y
         if dist < 1000 and self.shot_counter >= self.shot_freq:
             self.shot_counter = 0
-            Bullet((x1, y1), (x2, y2), True)
+            Bullet((x1, y1), (x2, y2), 'Musketeer')
 
     def resize(self, SW, SH):
         global MCbullet_width, MCbullet_height, width, height
@@ -482,6 +486,19 @@ class Musketeer(pygame.sprite.Sprite):
         self.image = pygame.transform.scale(self.image,
                                             (new_W, new_H))
         MCbullet_width, MCbullet_height = new_W, new_H
+
+
+class Magician(Musketeer):
+    def __init__(self, pos_x, pos_y):
+        super().__init__(pos_x, pos_y)
+        self.load_animation(pos_x, pos_y, magician_media)
+
+    def shot(self, x2, y2, dist):
+        self.shot_counter += 1
+        x1, y1 = self.rect.x, self.rect.y
+        if dist < 1000 and self.shot_counter >= self.shot_freq:
+            self.shot_counter = 0
+            Bullet((x1, y1), (x2, y2), 'Magician')
 
 
 class Button(pygame.sprite.Sprite):
@@ -542,6 +559,7 @@ def level1(screen):
     generate_enemies(3)
     n_enemies = 0
     Musketeer(500, 500)
+    Magician(600, 600)
 
     pygame.mouse.set_visible(True)
     while True:
@@ -587,8 +605,10 @@ def level1(screen):
         MCbullet_group.draw(screen)
         enemy_group.update(MainCharacter.rect.x, MainCharacter.rect.y)
         enemy_group.draw(screen)
-        enemies_bullet_group.update()
-        enemies_bullet_group.draw(screen)
+        musketeer_bullet_group.update()
+        musketeer_bullet_group.draw(screen)
+        magician_bullet_group.update()
+        magician_bullet_group.draw(screen)
 
         pygame.display.flip()
         clock.tick(FPS)
@@ -628,12 +648,14 @@ trees_group = pygame.sprite.Group()
 player_group = pygame.sprite.Group()
 MCbullet_group = pygame.sprite.Group()
 enemy_group = pygame.sprite.Group()
-enemies_bullet_group = pygame.sprite.Group()
+musketeer_bullet_group = pygame.sprite.Group()
+magician_bullet_group = pygame.sprite.Group()
 button_group = pygame.sprite.Group()
 
 tile_images = {
     'tree': load_image(r'game/tree.png'),
-    'MC_bullet': load_image(r'game/Bullet.png')
+    'MC_bullet': load_image(r'game/Bullet.png'),
+    'magician_bullet': load_image(r'game/magic_bullet.png')
 }
 
 background = pygame.transform.scale(load_image(r'game/background1.jpg'), (width, height))
@@ -641,6 +663,7 @@ background = pygame.transform.scale(load_image(r'game/background1.jpg'), (width,
 player_media = {'moving': [load_image(f'/game/horse/horse_{i}.png') for i in range(6)]}
 villager_media = {'moving': [load_image(f'/game/enemy/villager/sprite_{i}.png') for i in range(4)]}
 musketeer_media = {'moving': [load_image(f'/game/enemy/musketeer/musketeer{i}.png') for i in range(4)]}
+magician_media = {'moving': [load_image(f'/game/enemy/magician/magician_{i}.png') for i in range(2)]}
 enemy_images = {'stay': load_image(r'game/enemy/EK.png')}
 
 angles_dict = {'f': ...}
