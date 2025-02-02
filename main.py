@@ -339,16 +339,21 @@ class Player(pygame.sprite.Sprite):
 
 
 class Bullet(pygame.sprite.Sprite):
+    global enemies_firing_range, MC_firing_range
+
     def __init__(self, MC_coords, mouse_coords, enemy=''):
         if not enemy:
             super().__init__(MCbullet_group, all_sprites)
             self.image = tile_images['MC_bullet']
+            self.firing_range = MC_firing_range
         elif enemy == 'Musketeer':
             super().__init__(musketeer_bullet_group, all_sprites)
             self.image = tile_images['MC_bullet']
+            self.firing_range = enemies_firing_range
         else:
             super().__init__(magician_bullet_group, all_sprites)
             self.image = tile_images['magician_bullet']
+            self.firing_range = enemies_firing_range
         self.image = make_img(self.image, width, height, MCbullet_width, MCbullet_height)
         self.rect = self.image.get_rect().move(
             MC_coords[0] + MCbullet_width // 5.5, MC_coords[1] + MCbullet_height // 2)
@@ -372,7 +377,7 @@ class Bullet(pygame.sprite.Sprite):
         MCbullet_width, MCbullet_height = new_W, new_H
 
     def update(self):
-        if self.dist > firing_range:
+        if self.dist > self.firing_range:
             self.kill()
         if not -MCbullet_width <= self.rect.x <= width + MCbullet_width or \
                 not -MCbullet_height <= self.rect.y <= height + MCbullet_height:
@@ -864,8 +869,9 @@ MC_hp, Vil_hp, Musk_hp, Mag_hp = 100, 100, 75, 150
 MC_damage, Vil_damage, Musk_damage, Mag_damage = 10, 10, 10, 10
 v_damage_delay = 120
 
-firing_range = 250
-musketeer_firing_delay = 60
+enemies_firing_range = 250
+MC_firing_range = 300
+musketeer_firing_delay = 300
 
 MainCharacter = Player(width // 2, height // 2)
 
