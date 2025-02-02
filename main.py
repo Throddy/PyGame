@@ -702,25 +702,34 @@ class Camera:
 
 
 def wave1(screen):
-    global width, height
+    global width, height, background, tile_images
     MainCharacter.rect.x, MainCharacter.rect.y = width // 2, height // 2
     pygame.mouse.set_visible(True)
+
+    tile_images['tree'] = load_image(r'game/tree.png')
+    background = pygame.transform.scale(load_image(r'game/background1.jpg'), (width, height))
 
     update_level(screen, Villager)
 
 
 def wave2(screen):
-    global width, height
+    global width, height, background, tile_images
     MainCharacter.rect.x, MainCharacter.rect.y = width // 2, height // 2
     pygame.mouse.set_visible(True)
+
+    tile_images['tree'] = load_image(r'game/water.png')
+    background = pygame.transform.scale(load_image(r'game/road.png'), (width, height))
 
     update_level(screen, Musketeer)
 
 
 def wave3(screen):
-    global width, height
+    global width, height, background, tile_images
     MainCharacter.rect.x, MainCharacter.rect.y = width // 2, height // 2
     pygame.mouse.set_visible(True)
+
+    tile_images['tree'] = load_image(r'game/tree.png')
+    background = pygame.transform.scale(load_image(r'game/background1.jpg'), (width, height))
 
     update_level(screen, Magician)
 
@@ -866,11 +875,11 @@ magician_bullet_group = pygame.sprite.Group()
 button_group = pygame.sprite.Group()
 
 tile_images = {
-    'tree': load_image(r'game/tree.png'),
+    'tree': load_image(r'game/water.png'),
     'MC_bullet': load_image(r'game/Bullet.png'),
     'magician_bullet': load_image(r'game/magic_bullet.png')}
 
-background = pygame.transform.scale(load_image(r'game/background1.jpg'), (width, height))
+background = pygame.transform.scale(load_image(r'game/road.png'), (width, height))
 
 player_media = {'moving': [load_image(f'/game/horse/horse_{i}.png') for i in range(6)],
                 'moving_h': [load_image(f'/game/horse_hit/horse_hit_{i}.png') for i in range(6)]}
