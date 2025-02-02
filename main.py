@@ -65,36 +65,6 @@ def convert_gif(name):
     return frames
 
 
-"""
-def load_level(filename):
-    filename = "data/game/" + filename
-    # читаем уровень, убирая символы перевода строки
-    with open(filename, 'r') as mapFile:
-        level_map = [line.strip() for line in mapFile]
-
-    # и подсчитываем максимальную длину
-    max_width = max(map(len, level_map))
-
-    # дополняем каждую строку пустыми клетками ('.')
-    return list(map(lambda x: x.ljust(max_width, '.'), level_map))
-
-
-def generate_level(level):
-    new_player, x, y = None, None, None
-    for y in range(len(level)):
-        for x in range(len(level[y])):
-            if level[y][x] == '#':
-                Tile('tree', x, y)
-            elif level[y][x] == '@':
-                new_player = Player(x, y)
-    # вернем игрока, а также размер поля в клетках
-    return new_player, x, y
-"""
-
-
-# test
-
-
 def terminate():
     pygame.quit()
     sys.exit()
@@ -244,7 +214,7 @@ class Player(pygame.sprite.Sprite):
         self.frame_delay = 8
         self.time_counter = 0
         self.save_dir = 'r'
-        self.image = make_img(self.frames[self.save_dir][0], width, height, MC_width, MC_height)
+        self.image = make_img(self.frames[self.save_dir][0], width, height, UNIT_width, UNIT_height)
         self.rect = self.image.get_rect().move(
             pos_x + 15, pos_y + 5)
         self.prev_direction = ''
@@ -253,11 +223,11 @@ class Player(pygame.sprite.Sprite):
         self.time = 0
 
     def resize(self, SW, SH):
-        global MC_width, MC_height, width, height
-        new_W, new_H = MC_width * (SW / width), MC_height * (SH / height)
+        global UNIT_width, UNIT_height, width, height
+        new_W, new_H = UNIT_width * (SW / width), UNIT_height * (SH / height)
         self.image = pygame.transform.scale(self.image,
                                             (new_W, new_H))
-        MC_width, MC_height = new_W, new_H
+        UNIT_width, UNIT_height = new_W, new_H
 
     def update(self, keys, vx=0, vy=0):
         if self.hp <= 0:
@@ -309,26 +279,26 @@ class Player(pygame.sprite.Sprite):
                 self.cur_frame = (self.cur_frame + 1) % self.frames_amount
                 if cur_direction not in 'fd ':
                     self.image = make_img(self.frames[cur_direction[0] + ('h' if self.hit else '')][self.cur_frame],
-                                          width, height, MC_width, MC_height)
+                                          width, height, UNIT_width, UNIT_height)
                 else:
                     if cur_direction in 'fd':
                         if self.prev_direction not in 'fd ':  # не пауза фд == норм двиэ
                             self.save_dir = self.prev_direction
                             self.image = make_img(
                                 self.frames[self.save_dir[0] + ('h' if self.hit else '')][self.cur_frame], width,
-                                height, MC_width, MC_height)
+                                height, UNIT_width, UNIT_height)
                         elif self.prev_direction not in ' ':  # == fd
                             self.image = make_img(
                                 self.frames[self.save_dir[0] + ('h' if self.hit else '')][self.cur_frame], width,
-                                height, MC_width, MC_height)
+                                height, UNIT_width, UNIT_height)
                         else:
                             self.cur_frame = 0
                             self.image = make_img(
                                 self.frames[self.save_dir[0] + ('h' if self.hit else '')][self.cur_frame], width,
-                                height, MC_width, MC_height)
+                                height, UNIT_width, UNIT_height)
                     else:
                         self.image = make_img(self.frames[self.save_dir[0] + ('h' if self.hit else '')][0], width,
-                                              height, MC_width, MC_height)
+                                              height, UNIT_width, UNIT_height)
                 self.prev_direction = cur_direction
                 self.time_counter = 0
                 self.hit = False
@@ -399,7 +369,7 @@ class Villager(pygame.sprite.Sprite):
         self.frame_delay = 15
         self.time_counter = 0
         self.save_dir = 'r'
-        self.image = make_img(self.frames[self.save_dir][0], width, height, MC_width, MC_height)
+        self.image = make_img(self.frames[self.save_dir][0], width, height, UNIT_width, UNIT_height)
         self.rect = self.image.get_rect().move(
             pos_x + 15, pos_y + 5)
         self.prev_direction = ''
@@ -442,23 +412,23 @@ class Villager(pygame.sprite.Sprite):
             self.cur_frame = (self.cur_frame + 1) % self.frames_amount
             if cur_direction not in 'fd ':
                 self.image = make_img(self.frames[cur_direction[0] + ('h' if self.hit else '')][self.cur_frame], width,
-                                      height, MC_width, MC_height)
+                                      height, UNIT_width, UNIT_height)
             else:
                 if cur_direction in 'fd':
                     if self.prev_direction not in 'fd ':  # не пауза фд == норм двиэ
                         self.save_dir = self.prev_direction
                         self.image = make_img(self.frames[self.save_dir[0] + ('h' if self.hit else '')][self.cur_frame],
-                                              width, height, MC_width, MC_height)
+                                              width, height, UNIT_width, UNIT_height)
                     elif self.prev_direction not in ' ':  # == fd
                         self.image = make_img(self.frames[self.save_dir[0] + ('h' if self.hit else '')][self.cur_frame],
-                                              width, height, MC_width, MC_height)
+                                              width, height, UNIT_width, UNIT_height)
                     else:
                         self.cur_frame = 0
                         self.image = make_img(self.frames[self.save_dir[0] + ('h' if self.hit else '')][self.cur_frame],
-                                              width, height, MC_width, MC_height)
+                                              width, height, UNIT_width, UNIT_height)
                 else:
                     self.image = make_img(self.frames[self.save_dir[0] + ('h' if self.hit else '')][0], width, height,
-                                          MC_width, MC_height)
+                                          UNIT_width, UNIT_height)
             self.prev_direction = cur_direction
             self.time_counter = 0
             self.hit = False
@@ -494,7 +464,7 @@ class Musketeer(pygame.sprite.Sprite):
         self.time_counter = 0
         self.shot_counter = 0
         self.save_dir = 'r'
-        self.image = make_img(self.frames[self.save_dir][0], width, height, MC_width, MC_height)
+        self.image = make_img(self.frames[self.save_dir][0], width, height, UNIT_width, UNIT_height)
         self.rect = self.image.get_rect().move(
             pos_x + 15, pos_y + 5)
         self.prev_direction = ''
@@ -543,23 +513,23 @@ class Musketeer(pygame.sprite.Sprite):
             self.cur_frame = (self.cur_frame + 1) % self.frames_amount
             if cur_direction not in 'fd ':
                 self.image = make_img(self.frames[cur_direction[0] + ('h' if self.hit else '')][self.cur_frame], width,
-                                      height, MC_width, MC_height)
+                                      height, UNIT_width, UNIT_height)
             else:
                 if cur_direction in 'fd':
-                    if self.prev_direction not in 'fd ':  # не пауза фд == норм двиэ
+                    if self.prev_direction not in 'fd ':  # не пауза фд == норм движ
                         self.save_dir = self.prev_direction
                         self.image = make_img(self.frames[self.save_dir[0] + ('h' if self.hit else '')][self.cur_frame],
-                                              width, height, MC_width, MC_height)
+                                              width, height, UNIT_width, UNIT_height)
                     elif self.prev_direction not in ' ':  # == fd
                         self.image = make_img(self.frames[self.save_dir[0] + ('h' if self.hit else '')][self.cur_frame],
-                                              width, height, MC_width, MC_height)
+                                              width, height, UNIT_width, UNIT_height)
                     else:
                         self.cur_frame = 0
                         self.image = make_img(self.frames[self.save_dir[0] + ('h' if self.hit else '')][self.cur_frame],
-                                              width, height, MC_width, MC_height)
+                                              width, height, UNIT_width, UNIT_height)
                 else:
                     self.image = make_img(self.frames[self.save_dir[0] + ('h' if self.hit else '')][0], width, height,
-                                          MC_width, MC_height)
+                                          UNIT_width, UNIT_height)
             self.prev_direction = cur_direction
             self.time_counter = 0
             self.hit = False
@@ -702,6 +672,9 @@ def level1(screen):
         magician_bullet_group.update()
         magician_bullet_group.draw(screen)
         draw_hp_bar(screen, 25, 25, MainCharacter.hp)
+        for sprite in all_sprites:
+            if sprite in enemy_group:
+                enemy_hp_bar(sprite, sprite.rect.x, sprite.rect.y, sprite.hp)
 
         pygame.display.flip()
         clock.tick(FPS)
@@ -740,11 +713,22 @@ def draw_hp_bar(screen, x, y, pct):
         pct = 0
     heart = tile_images['heart']
     screen.blit(heart, (0, 20))
-    fill = (pct / 100) * BAR_LENGTH
-    outline_rect = pygame.Rect(x, y, BAR_LENGTH, BAR_HEIGHT)
-    fill_rect = pygame.Rect(x, y, fill, BAR_HEIGHT)
+    fill = (pct / 100) * HORSE_BAR_LENGTH
+    outline_rect = pygame.Rect(x, y, HORSE_BAR_LENGTH, HORSE_BAR_HEIGHT)
+    fill_rect = pygame.Rect(x, y, fill, HORSE_BAR_HEIGHT)
     pygame.draw.rect(screen, 'green', fill_rect)
     pygame.draw.rect(screen, 'white', outline_rect, 2)
+
+
+def enemy_hp_bar(self, x, y, cur_hp):
+    if isinstance(self, Villager):  color = 'purple'
+    elif isinstance(self, Musketeer):   color = 'pink'
+    elif isinstance(self, Magician):    color = 'red'
+    outline_rect = pygame.Rect(x, y - 20, ENEMY_BAR_LENGTH, ENEMY_BAR_HEIGHT)
+    cur_hp = (cur_hp / 100) * ENEMY_BAR_LENGTH
+    fill_rect = pygame.Rect(x, y - 20, cur_hp, ENEMY_BAR_HEIGHT)
+    pygame.draw.rect(screen, color, fill_rect)
+    pygame.draw.rect(screen, 'black', outline_rect, 1)
 
 
 all_sprites = pygame.sprite.Group()
@@ -757,13 +741,13 @@ musketeer_bullet_group = pygame.sprite.Group()
 magician_bullet_group = pygame.sprite.Group()
 button_group = pygame.sprite.Group()
 
-BAR_LENGTH, BAR_HEIGHT = 200, 20
+HORSE_BAR_LENGTH, HORSE_BAR_HEIGHT = 200, 20
 
 tile_images = {
     'tree': load_image(r'game/tree.png'),
     'MC_bullet': load_image(r'game/Bullet.png'),
     'magician_bullet': load_image(r'game/magic_bullet.png'),
-    'heart': pygame.transform.scale(load_image(r'game/heart.png'), (BAR_HEIGHT + 10, BAR_HEIGHT + 10))
+    'heart': pygame.transform.scale(load_image(r'game/heart.png'), (HORSE_BAR_HEIGHT + 10, HORSE_BAR_HEIGHT + 10))
 }
 
 background = pygame.transform.scale(load_image(r'game/background1.jpg'), (width, height))
@@ -778,9 +762,7 @@ magician_media = {'moving': [load_image(f'/game/enemy/magician/magician_{i}.png'
                   'moving_h': [load_image(f'/game/enemy/magician/magician_hit_{i}.png') for i in range(2)]}
 enemy_images = {'stay': load_image(r'game/enemy/EK.png')}
 
-angles_dict = {'f': ...}
-
-MC_width, MC_height = 80, 80
+UNIT_width, UNIT_height = 80, 80
 mc_def_v = 7
 MCbullet_width, MCbullet_height = 40, 40
 bullet_def_v = 20
@@ -791,8 +773,10 @@ MC_hp, Vil_hp, Musk_hp, Mag_hp = 100, 100, 75, 150
 MC_damage, Vil_damage, Musk_damage, Mag_damage = 10, 10, 10, 10
 v_damage_delay = 120
 
-firing_range = 250
+firing_range = 300
 musketeer_firing_delay = 60
+
+ENEMY_BAR_LENGTH, ENEMY_BAR_HEIGHT = UNIT_width, 10
 
 MainCharacter = Player(width // 2, height // 2)
 
