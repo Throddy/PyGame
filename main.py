@@ -199,7 +199,12 @@ class Player(pygame.sprite.Sprite):
         self.frames = {'l': player_media['moving'],
                        'r': list(map(lambda pic:
                                      pygame.transform.flip(pic, True, False),
-                                     player_media['moving']))}
+                                     player_media['moving'])),
+                       'lh': player_media['moving_h'],
+                       'rh': list(map(lambda pic:
+                                      pygame.transform.flip(pic, True, False),
+                                      player_media['moving_h']))
+                       }
         self.cur_frame = 0
         self.frame_delay = 8
         self.time_counter = 0
@@ -208,6 +213,8 @@ class Player(pygame.sprite.Sprite):
         self.rect = self.image.get_rect().move(
             pos_x + 15, pos_y + 5)
         self.prev_direction = ''
+        self.hp = MC_hp
+        self.hit = False
 
     def resize(self, SW, SH):
         global MC_width, MC_height, width, height
@@ -217,6 +224,13 @@ class Player(pygame.sprite.Sprite):
         MC_width, MC_height = new_W, new_H
 
     def update(self, keys, vx=0, vy=0):
+        if self.hp <= 0:
+            self.kill()
+        if pygame.sprite.spritecollide(self, magician_bullet_group, dokill=True):
+            self.hit = True
+            self.hp -= 10
+            print(self.hp)
+
         l, r, f, d = '', '', '', ''
         if not keys[pygame.K_SPACE]:
             if keys[pygame.K_a]:
@@ -252,25 +266,30 @@ class Player(pygame.sprite.Sprite):
             if self.time_counter >= self.frame_delay:
                 self.cur_frame = (self.cur_frame + 1) % self.frames_amount
                 if cur_direction not in 'fd ':
-                    self.image = make_img(self.frames[cur_direction[0]][self.cur_frame], width, height, MC_width,
-                                          MC_height)
+                    self.image = make_img(self.frames[cur_direction[0] + ('h' if self.hit else '')][self.cur_frame],
+                                          width, height, MC_width, MC_height)
                 else:
                     if cur_direction in 'fd':
                         if self.prev_direction not in 'fd ':  # не пауза фд == норм двиэ
                             self.save_dir = self.prev_direction
-                            self.image = make_img(self.frames[self.save_dir[0]][self.cur_frame], width, height,
-                                                  MC_width, MC_height)
+                            self.image = make_img(
+                                self.frames[self.save_dir[0] + ('h' if self.hit else '')][self.cur_frame], width,
+                                height, MC_width, MC_height)
                         elif self.prev_direction not in ' ':  # == fd
-                            self.image = make_img(self.frames[self.save_dir[0]][self.cur_frame], width, height,
-                                                  MC_width, MC_height)
+                            self.image = make_img(
+                                self.frames[self.save_dir[0] + ('h' if self.hit else '')][self.cur_frame], width,
+                                height, MC_width, MC_height)
                         else:
                             self.cur_frame = 0
-                            self.image = make_img(self.frames[self.save_dir[0]][self.cur_frame], width, height,
-                                                  MC_width, MC_height)
+                            self.image = make_img(
+                                self.frames[self.save_dir[0] + ('h' if self.hit else '')][self.cur_frame], width,
+                                height, MC_width, MC_height)
                     else:
-                        self.image = make_img(self.frames[self.save_dir[0]][0], width, height, MC_width, MC_height)
+                        self.image = make_img(self.frames[self.save_dir[0] + ('h' if self.hit else '')][0], width,
+                                              height, MC_width, MC_height)
                 self.prev_direction = cur_direction
                 self.time_counter = 0
+                self.hit = False
 
         else:
             self.rect.x, self.rect.y = width // 2, height // 2
@@ -337,6 +356,7 @@ class Villager(pygame.sprite.Sprite):
         self.rect = self.image.get_rect().move(
             pos_x + 15, pos_y + 5)
         self.prev_direction = ''
+        self.hp = Vil_hp
 
     def update(self, x2, y2, norm_v=3 / (2 ** 0.5)):
         x1, y1 = self.rect.x, self.rect.y
@@ -401,6 +421,7 @@ class Musketeer(pygame.sprite.Sprite):
         super().__init__(enemy_group, all_sprites)
         self.shot_freq = musketeer_firing_delay
         self.load_animation(pos_x, pos_y, musketeer_media)
+        self.hp = Musk_hp
 
     def load_animation(self, pos_x, pos_y, media):
         self.frames_amount = len(media['moving'])
@@ -492,6 +513,7 @@ class Magician(Musketeer):
     def __init__(self, pos_x, pos_y):
         super().__init__(pos_x, pos_y)
         self.load_animation(pos_x, pos_y, magician_media)
+        self.hp = Mag_hp
 
     def shot(self, x2, y2, dist):
         self.shot_counter += 1
@@ -609,6 +631,7 @@ def level1(screen):
         musketeer_bullet_group.draw(screen)
         magician_bullet_group.update()
         magician_bullet_group.draw(screen)
+        draw_hp_bar(screen, 25, 25, MainCharacter.hp)
 
         pygame.display.flip()
         clock.tick(FPS)
@@ -642,6 +665,18 @@ def generate_enemies(n):
             Villager(randint(0, width), height)
 
 
+def draw_hp_bar(screen, x, y, pct):
+    if pct < 0:
+        pct = 0
+    heart = tile_images['heart']
+    screen.blit(heart, (0, 20))
+    fill = (pct / 100) * BAR_LENGTH
+    outline_rect = pygame.Rect(x, y, BAR_LENGTH, BAR_HEIGHT)
+    fill_rect = pygame.Rect(x, y, fill, BAR_HEIGHT)
+    pygame.draw.rect(screen, 'green', fill_rect)
+    pygame.draw.rect(screen, 'white', outline_rect, 2)
+
+
 all_sprites = pygame.sprite.Group()
 cursor_group = pygame.sprite.Group()
 trees_group = pygame.sprite.Group()
@@ -652,15 +687,19 @@ musketeer_bullet_group = pygame.sprite.Group()
 magician_bullet_group = pygame.sprite.Group()
 button_group = pygame.sprite.Group()
 
+BAR_LENGTH, BAR_HEIGHT = 200, 20
+
 tile_images = {
     'tree': load_image(r'game/tree.png'),
     'MC_bullet': load_image(r'game/Bullet.png'),
-    'magician_bullet': load_image(r'game/magic_bullet.png')
+    'magician_bullet': load_image(r'game/magic_bullet.png'),
+    'heart': pygame.transform.scale(load_image(r'game/heart.png'), (BAR_HEIGHT + 10, BAR_HEIGHT + 10))
 }
 
 background = pygame.transform.scale(load_image(r'game/background1.jpg'), (width, height))
 
-player_media = {'moving': [load_image(f'/game/horse/horse_{i}.png') for i in range(6)]}
+player_media = {'moving': [load_image(f'/game/horse/horse_{i}.png') for i in range(6)],
+                'moving_h': [load_image(f'/game/horse_hit/horse_hit_{i}.png') for i in range(6)]}
 villager_media = {'moving': [load_image(f'/game/enemy/villager/sprite_{i}.png') for i in range(4)]}
 musketeer_media = {'moving': [load_image(f'/game/enemy/musketeer/musketeer{i}.png') for i in range(4)]}
 magician_media = {'moving': [load_image(f'/game/enemy/magician/magician_{i}.png') for i in range(2)]}
@@ -674,6 +713,8 @@ MCbullet_width, MCbullet_height = 40, 40
 bullet_def_v = 20
 tree_width = tree_height = 100
 Ntrees_horz, Ntrees_vert = 30, 18
+
+MC_hp, Vil_hp, Musk_hp, Mag_hp = 100, 100, 75, 150
 
 firing_range = 250
 musketeer_firing_delay = 60
