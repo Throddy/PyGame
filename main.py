@@ -345,9 +345,13 @@ class Villager(pygame.sprite.Sprite):
         super().__init__(enemy_group, all_sprites)
         self.frames_amount = len(villager_media['moving'])
         self.frames = {'l': villager_media['moving'],
+                       'lh': villager_media['moving_h'],
                        'r': list(map(lambda pic:
                                      pygame.transform.flip(pic, True, False),
-                                     villager_media['moving']))}
+                                     villager_media['moving'])),
+                       'rh': list(map(lambda pic:
+                                      pygame.transform.flip(pic, True, False),
+                                      villager_media['moving_h']))}
         self.cur_frame = 0
         self.frame_delay = 15
         self.time_counter = 0
@@ -357,8 +361,16 @@ class Villager(pygame.sprite.Sprite):
             pos_x + 15, pos_y + 5)
         self.prev_direction = ''
         self.hp = Vil_hp
+        self.hit = False
 
     def update(self, x2, y2, norm_v=3 / (2 ** 0.5)):
+        if self.hp <= 0:
+            self.kill()
+
+        if pygame.sprite.spritecollide(self, MCbullet_group, dokill=True):
+            self.hit = True
+            self.hp -= 10
+
         x1, y1 = self.rect.x, self.rect.y
 
         perp_x = x2 - x1
@@ -368,10 +380,7 @@ class Villager(pygame.sprite.Sprite):
         if dist != 0:
             vx = (perp_x / dist) * norm_v
             vy = (perp_y / dist) * norm_v
-            if pygame.sprite.spritecollideany(self, MCbullet_group):
-                pygame.sprite.spritecollide(self, MCbullet_group, dokill=True)
-                self.kill()
-            else:
+            if not (pygame.sprite.spritecollideany(self, MCbullet_group)):
                 self.rect = self.rect.move(vx, vy)
 
         l, r, f, d = '', '', '', ''
@@ -389,24 +398,27 @@ class Villager(pygame.sprite.Sprite):
         if self.time_counter >= self.frame_delay:
             self.cur_frame = (self.cur_frame + 1) % self.frames_amount
             if cur_direction not in 'fd ':
-                self.image = make_img(self.frames[cur_direction[0]][self.cur_frame], width, height, MC_width, MC_height)
+                self.image = make_img(self.frames[cur_direction[0] + ('h' if self.hit else '')][self.cur_frame], width,
+                                      height, MC_width, MC_height)
             else:
                 if cur_direction in 'fd':
                     if self.prev_direction not in 'fd ':  # не пауза фд == норм двиэ
                         self.save_dir = self.prev_direction
-                        self.image = make_img(self.frames[self.save_dir[0]][self.cur_frame], width, height, MC_width,
-                                              MC_height)
+                        self.image = make_img(self.frames[self.save_dir[0] + ('h' if self.hit else '')][self.cur_frame],
+                                              width, height, MC_width, MC_height)
                     elif self.prev_direction not in ' ':  # == fd
-                        self.image = make_img(self.frames[self.save_dir[0]][self.cur_frame], width, height, MC_width,
-                                              MC_height)
+                        self.image = make_img(self.frames[self.save_dir[0] + ('h' if self.hit else '')][self.cur_frame],
+                                              width, height, MC_width, MC_height)
                     else:
                         self.cur_frame = 0
-                        self.image = make_img(self.frames[self.save_dir[0]][self.cur_frame], width, height, MC_width,
-                                              MC_height)
+                        self.image = make_img(self.frames[self.save_dir[0] + ('h' if self.hit else '')][self.cur_frame],
+                                              width, height, MC_width, MC_height)
                 else:
-                    self.image = make_img(self.frames[self.save_dir[0]][0], width, height, MC_width, MC_height)
+                    self.image = make_img(self.frames[self.save_dir[0] + ('h' if self.hit else '')][0], width, height,
+                                          MC_width, MC_height)
             self.prev_direction = cur_direction
             self.time_counter = 0
+            self.hit = False
 
     def resize(self, SW, SH):
         global MCbullet_width, MCbullet_height, width, height
@@ -700,7 +712,8 @@ background = pygame.transform.scale(load_image(r'game/background1.jpg'), (width,
 
 player_media = {'moving': [load_image(f'/game/horse/horse_{i}.png') for i in range(6)],
                 'moving_h': [load_image(f'/game/horse_hit/horse_hit_{i}.png') for i in range(6)]}
-villager_media = {'moving': [load_image(f'/game/enemy/villager/sprite_{i}.png') for i in range(4)]}
+villager_media = {'moving': [load_image(f'/game/enemy/villager/sprite_{i}.png') for i in range(4)],
+                  'moving_h': [load_image(f'/game/enemy/villager/villager_hit_{i}.png') for i in range(4)]}
 musketeer_media = {'moving': [load_image(f'/game/enemy/musketeer/musketeer{i}.png') for i in range(4)]}
 magician_media = {'moving': [load_image(f'/game/enemy/magician/magician_{i}.png') for i in range(2)]}
 enemy_images = {'stay': load_image(r'game/enemy/EK.png')}
