@@ -65,6 +65,36 @@ def convert_gif(name):
     return frames
 
 
+"""
+def load_level(filename):
+    filename = "data/game/" + filename
+    # читаем уровень, убирая символы перевода строки
+    with open(filename, 'r') as mapFile:
+        level_map = [line.strip() for line in mapFile]
+
+    # и подсчитываем максимальную длину
+    max_width = max(map(len, level_map))
+
+    # дополняем каждую строку пустыми клетками ('.')
+    return list(map(lambda x: x.ljust(max_width, '.'), level_map))
+
+
+def generate_level(level):
+    new_player, x, y = None, None, None
+    for y in range(len(level)):
+        for x in range(len(level[y])):
+            if level[y][x] == '#':
+                Tile('tree', x, y)
+            elif level[y][x] == '@':
+                new_player = Player(x, y)
+    # вернем игрока, а также размер поля в клетках
+    return new_player, x, y
+"""
+
+
+# test
+
+
 def terminate():
     pygame.quit()
     sys.exit()
@@ -74,8 +104,12 @@ def start_screen():
     cursor = Cursor()
     all_sprites.add(cursor)
     cursor_group.add(cursor)
-    flag = True
+    flag = False
     pygame.mouse.set_visible(False)
+
+    title = Button(410, 10, (550, 120))
+    title.set_image('start_screen/title/title_0.png')
+
     start_button = Button(500, 200, (350, 100))
     start_button.set_image('start_screen/startbutton/sprite_0.png')
 
@@ -108,7 +142,8 @@ def start_screen():
                 cursor.rect.x, cursor.rect.y = cords
         button_group.update()
         button_group.draw(screen)
-        cursor_group.draw(screen)
+        if flag:
+            cursor_group.draw(screen)
         pygame.display.flip()
         clock.tick(FPS)
 
@@ -117,7 +152,7 @@ def comic():
     cursor = Cursor()
     all_sprites.add(cursor)
     cursor_group.add(cursor)
-    flag = True
+    flag = False
     pygame.mouse.set_visible(False)
     start_button = Button(0, 700, (300, 80))
     start_button.set_image('start_screen/startbutton/sprite_0.png')
@@ -142,7 +177,50 @@ def comic():
                 cursor.rect.x, cursor.rect.y = cords
         button_group.update()
         button_group.draw(screen)
-        cursor_group.draw(screen)
+        if flag:
+            cursor_group.draw(screen)
+        pygame.display.flip()
+        clock.tick(FPS)
+
+
+def bad_end():
+    button_group.empty()
+    cursor_group.empty()
+    cursor = Cursor()
+    all_sprites.add(cursor)
+    cursor_group.add(cursor)
+    flag = False
+    pygame.mouse.set_visible(False)
+    start_button = Button(300, 600, (350, 100))
+    start_button.set_image('start_screen/startbutton/sprite_0.png')
+
+    exit_button = Button(700, 600, (350, 100))
+    exit_button.set_image('start_screen/exitbutton/exitbutton_0.png')
+
+    while True:
+        screen.fill(pygame.Color('black'))
+        fon = pygame.transform.scale(load_image('start_screen/game_over.jpeg'), (width, height))
+        screen.blit(fon, (0, 0))
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                terminate()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    if pygame.sprite.spritecollideany(start_button, cursor_group):
+                        cursor.kill()
+                        button_group.empty()
+                        return
+                    if pygame.sprite.spritecollideany(exit_button, cursor_group):
+                        terminate()
+
+            if event.type == pygame.MOUSEMOTION:
+                cords = event.pos
+                flag = pygame.mouse.get_focused()
+                cursor.rect.x, cursor.rect.y = cords
+        button_group.update()
+        button_group.draw(screen)
+        if flag:
+            cursor_group.draw(screen)
         pygame.display.flip()
         clock.tick(FPS)
 
@@ -230,7 +308,9 @@ class Player(pygame.sprite.Sprite):
         UNIT_width, UNIT_height = new_W, new_H
 
     def update(self, keys, vx=0, vy=0):
+        global bad_end_flag
         if self.hp <= 0:
+            bad_end_flag = True
             self.kill()
         if pygame.sprite.spritecollide(self, musketeer_bullet_group, dokill=True):
             self.hit = True
@@ -309,16 +389,21 @@ class Player(pygame.sprite.Sprite):
 
 
 class Bullet(pygame.sprite.Sprite):
+    global enemies_firing_range, MC_firing_range
+
     def __init__(self, MC_coords, mouse_coords, enemy=''):
         if not enemy:
             super().__init__(MCbullet_group, all_sprites)
             self.image = tile_images['MC_bullet']
+            self.firing_range = MC_firing_range
         elif enemy == 'Musketeer':
             super().__init__(musketeer_bullet_group, all_sprites)
             self.image = tile_images['MC_bullet']
+            self.firing_range = enemies_firing_range
         else:
             super().__init__(magician_bullet_group, all_sprites)
             self.image = tile_images['magician_bullet']
+            self.firing_range = enemies_firing_range
         self.image = make_img(self.image, width, height, MCbullet_width, MCbullet_height)
         self.rect = self.image.get_rect().move(
             MC_coords[0] + MCbullet_width // 5.5, MC_coords[1] + MCbullet_height // 2)
@@ -342,7 +427,7 @@ class Bullet(pygame.sprite.Sprite):
         MCbullet_width, MCbullet_height = new_W, new_H
 
     def update(self):
-        if self.dist > firing_range:
+        if self.dist > self.firing_range:
             self.kill()
         if not -MCbullet_width <= self.rect.x <= width + MCbullet_width or \
                 not -MCbullet_height <= self.rect.y <= height + MCbullet_height:
@@ -614,16 +699,39 @@ class Camera:
         self.dy = 0  # -(target.rect.y + target.rect.h // 2 - height // 2) - tile_height
 
 
-def level1(screen):
-    global background, width, height
+def wave1(screen):
+    global width, height
+    MainCharacter.rect.x, MainCharacter.rect.y = width // 2, height // 2
+    pygame.mouse.set_visible(True)
+
+    update_level(screen, Villager)
+
+
+def wave2(screen):
+    global width, height
+    MainCharacter.rect.x, MainCharacter.rect.y = width // 2, height // 2
+    pygame.mouse.set_visible(True)
+
+    update_level(screen, Musketeer)
+
+
+def wave3(screen):
+    global width, height
+    MainCharacter.rect.x, MainCharacter.rect.y = width // 2, height // 2
+    pygame.mouse.set_visible(True)
+
+    update_level(screen, Magician)
+
+
+def update_level(screen, enemy):
+    global background, width, height, bad_end_flag, cur_wave
+    bad_end_flag = False
+    all_sprites.empty()
+    enemy_group.empty()
     resized_flag = False
     camera = Camera()
-    generate_enemies(3)
+    generate_enemies(3, enemy)
     n_enemies = 0
-    # Musketeer(500, 500)
-    # Magician(600, 600)
-
-    pygame.mouse.set_visible(True)
     while True:
         screen.fill('black')
         screen.blit(background, (0, 0))
@@ -632,8 +740,19 @@ def level1(screen):
 
         if n_enemies < 15:
             if len(enemy_group) < 2:
-                generate_enemies(n := randint(1, 5))
+                generate_enemies(n := randint(1, 5), enemy)
                 n_enemies += n
+        else:
+            if len(enemy_group) == 0:
+                for tree in trees_group:
+                    if (tree.rect.x == width - tree_width and
+                            (height // 2 - tree_height) <= tree.rect.y <= (height // 2 + tree_height)):
+                        tree.kill()
+            if MainCharacter.rect.x > width:
+                cur_wave += 1
+                if cur_wave <= 2:
+                    waves[cur_wave](screen)
+                return
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -662,6 +781,8 @@ def level1(screen):
 
         trees_group.draw(screen)
         player_group.update(keys)
+        if bad_end_flag:
+            return
         player_group.draw(screen)
         MCbullet_group.update()
         MCbullet_group.draw(screen)
@@ -695,17 +816,17 @@ def generate_borders(w, h):
         Tree(w - tree_width, i * vert_step)
 
 
-def generate_enemies(n):
+def generate_enemies(n, enemy):
     for _ in range(n):
         side = randint(1, 4)
         if side == 1:
-            Villager(0, randint(0, height))
+            enemy(0, randint(0, height))
         elif side == 2:
-            Villager(randint(0, width), 0)
+            enemy(randint(0, width), 0)
         elif side == 4:
-            Villager(width, randint(0, height))
+            enemy(width, randint(0, height))
         else:
-            Villager(randint(0, width), height)
+            enemy(randint(0, width), height)
 
 
 def draw_hp_bar(screen, x, y, pct):
@@ -721,11 +842,16 @@ def draw_hp_bar(screen, x, y, pct):
 
 
 def enemy_hp_bar(self, x, y, cur_hp):
-    if isinstance(self, Villager):  color = 'purple'
-    elif isinstance(self, Musketeer):   color = 'pink'
-    elif isinstance(self, Magician):    color = 'red'
+    if isinstance(self, Villager):
+        color = 'purple'
+        cur_hp = (cur_hp / Vil_hp) * ENEMY_BAR_LENGTH
+    elif isinstance(self, Musketeer):
+        color = 'pink'
+        cur_hp = (cur_hp / Musk_hp) * ENEMY_BAR_LENGTH
+    elif isinstance(self, Magician):
+        color = 'red'
+        cur_hp = (cur_hp / Mag_hp) * ENEMY_BAR_LENGTH
     outline_rect = pygame.Rect(x, y - ENEMY_BAR_HEIGHT * 2, ENEMY_BAR_LENGTH, ENEMY_BAR_HEIGHT)
-    cur_hp = (cur_hp / 100) * ENEMY_BAR_LENGTH
     fill_rect = pygame.Rect(x, y - ENEMY_BAR_HEIGHT * 2, cur_hp, ENEMY_BAR_HEIGHT)
     pygame.draw.rect(screen, color, fill_rect)
     pygame.draw.rect(screen, 'black', outline_rect, 1)
@@ -763,6 +889,9 @@ magician_media = {'moving': [load_image(f'/game/enemy/magician/magician_{i}.png'
 enemy_images = {'stay': load_image(r'game/enemy/EK.png')}
 
 UNIT_width, UNIT_height = 80, 80
+angles_dict = {'f': ...}
+
+MC_width, MC_height = 80, 80
 mc_def_v = 7
 MCbullet_width, MCbullet_height = 40, 40
 bullet_def_v = 20
@@ -773,23 +902,32 @@ MC_hp, Vil_hp, Musk_hp, Mag_hp = 100, 100, 75, 150
 MC_damage, Vil_damage, Musk_damage, Mag_damage = 10, 10, 10, 10
 v_damage_delay = 120
 
-firing_range = 300
-musketeer_firing_delay = 60
+enemies_firing_range = 250
+MC_firing_range = 300
+musketeer_firing_delay = 300
 
 ENEMY_BAR_LENGTH, ENEMY_BAR_HEIGHT = UNIT_width, 10
 
-MainCharacter = Player(width // 2, height // 2)
+waves = [wave1, wave2, wave3]
+cur_wave = 0
 
 clock = pygame.time.Clock()
 FPS = 60
 
+bad_end_flag = False
+exit_flag = False
 """
 player, level_x, level_y = generate_level(load_level('lvl1.txt'))
 """
 
 if __name__ == '__main__':
-    start_screen()
-    comic()
-    level1(screen)
-    final_screen()
-    terminate()
+    while True:
+        start_screen()
+        comic()
+        MainCharacter = Player(width // 2, height // 2)
+        wave1(screen)
+        if bad_end_flag:
+            bad_end()
+            continue
+        final_screen()
+        terminate()
