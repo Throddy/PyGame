@@ -318,8 +318,8 @@ class Button(pygame.sprite.Sprite):
     def set_image(self, way):
         self.way = way
         self.image = load_image(way)
-        self.rect = self.image.get_rect().move(self.pos_x + 15, self.pos_y + 5)
         self.image = pygame.transform.scale(self.image,(self.size[0], self.size[1]))
+        self.rect = self.image.get_rect().move(self.pos_x + 15, self.pos_y + 5)
 
     def resize(self, SW, SH):
         global MCbullet_width, MCbullet_height, width, height
