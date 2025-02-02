@@ -329,6 +329,40 @@ class Villager(pygame.sprite.Sprite):
             else:
                 self.rect = self.rect.move(vx, vy)
 
+        l, r, f, d = '', '', '', ''
+        if perp_y > 0:
+            d = 'd'
+        if perp_y < 0:
+            f = 'f'
+        if perp_x > 0:
+            r = 'r'
+        if perp_x < 0:
+            l = 'l'
+        cur_direction = l + r + f + d
+
+        self.time_counter += 1
+        if self.time_counter >= self.frame_delay:
+            self.cur_frame = (self.cur_frame + 1) % self.frames_amount
+            if cur_direction not in 'fd ':
+                self.image = make_img(self.frames[cur_direction[0]][self.cur_frame], width, height, MC_width, MC_height)
+            else:
+                if cur_direction in 'fd':
+                    if self.prev_direction not in 'fd ':  # не пауза фд == норм двиэ
+                        self.save_dir = self.prev_direction
+                        self.image = make_img(self.frames[self.save_dir[0]][self.cur_frame], width, height, MC_width,
+                                              MC_height)
+                    elif self.prev_direction not in ' ':  # == fd
+                        self.image = make_img(self.frames[self.save_dir[0]][self.cur_frame], width, height, MC_width,
+                                              MC_height)
+                    else:
+                        self.cur_frame = 0
+                        self.image = make_img(self.frames[self.save_dir[0]][self.cur_frame], width, height, MC_width,
+                                              MC_height)
+                else:
+                    self.image = make_img(self.frames[self.save_dir[0]][0], width, height, MC_width, MC_height)
+            self.prev_direction = cur_direction
+            self.time_counter = 0
+
     def resize(self, SW, SH):
         global MCbullet_width, MCbullet_height, width, height
         new_W, new_H = MCbullet_width * (SW / width), MCbullet_height * (SH / height)
@@ -500,7 +534,7 @@ background = pygame.transform.scale(load_image(r'game\background1.jpg'), (width,
 
 player_media = {'moving': convert_gif(r'game\MC_moving\MCwalk.gif')}
 villager_media = {'moving': [load_image(f'/game/enemy/villager/sprite_{i}.png')for i in range(4)]}
-enemy_images = {'stay': load_image(r'game\enemy\EK.png')}
+enemy_images = {'stay': load_image(r'game\enemy\EK.png'), 'musketeer': load_image(r'game/enemy/Musketeer/musketeer0.png')}
 
 angles_dict = {'f': ...}
 
