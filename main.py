@@ -104,7 +104,7 @@ def start_screen():
     cursor = Cursor()
     all_sprites.add(cursor)
     cursor_group.add(cursor)
-    flag = True
+    flag = False
     pygame.mouse.set_visible(False)
 
     title = Button(410, 10, (550, 120))
@@ -142,7 +142,8 @@ def start_screen():
                 cursor.rect.x, cursor.rect.y = cords
         button_group.update()
         button_group.draw(screen)
-        cursor_group.draw(screen)
+        if flag:
+            cursor_group.draw(screen)
         pygame.display.flip()
         clock.tick(FPS)
 
@@ -151,7 +152,7 @@ def comic():
     cursor = Cursor()
     all_sprites.add(cursor)
     cursor_group.add(cursor)
-    flag = True
+    flag = False
     pygame.mouse.set_visible(False)
     start_button = Button(0, 700, (300, 80))
     start_button.set_image('start_screen/startbutton/sprite_0.png')
@@ -176,7 +177,49 @@ def comic():
                 cursor.rect.x, cursor.rect.y = cords
         button_group.update()
         button_group.draw(screen)
-        cursor_group.draw(screen)
+        if flag:
+            cursor_group.draw(screen)
+        pygame.display.flip()
+        clock.tick(FPS)
+
+
+def bad_end():
+    button_group.empty()
+    cursor_group.empty()
+    cursor = Cursor()
+    all_sprites.add(cursor)
+    cursor_group.add(cursor)
+    flag = False
+    pygame.mouse.set_visible(False)
+    start_button = Button(300, 600, (350, 100))
+    start_button.set_image('start_screen/startbutton/sprite_0.png')
+
+    exit_button = Button(700, 600, (350, 100))
+    exit_button.set_image('start_screen/exitbutton/exitbutton_0.png')
+
+    while True:
+        screen.fill(pygame.Color('black'))
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                terminate()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    if pygame.sprite.spritecollideany(start_button, cursor_group):
+                        cursor.kill()
+                        button_group.empty()
+                        return
+                    if pygame.sprite.spritecollideany(exit_button, cursor_group):
+                        terminate()
+
+            if event.type == pygame.MOUSEMOTION:
+                cords = event.pos
+                flag = pygame.mouse.get_focused()
+                cursor.rect.x, cursor.rect.y = cords
+        button_group.update()
+        button_group.draw(screen)
+        if flag:
+            cursor_group.draw(screen)
         pygame.display.flip()
         clock.tick(FPS)
 
@@ -264,7 +307,9 @@ class Player(pygame.sprite.Sprite):
         MC_width, MC_height = new_W, new_H
 
     def update(self, keys, vx=0, vy=0):
+        global bad_end_flag
         if self.hp <= 0:
+            bad_end_flag = True
             self.kill()
         if pygame.sprite.spritecollide(self, musketeer_bullet_group, dokill=True):
             self.hit = True
@@ -649,10 +694,14 @@ class Camera:
 
 
 def level1(screen):
-    global background, width, height
+    global background, width, height, bad_end_flag
+    bad_end_flag = False
+    all_sprites.empty()
+    enemy_group.empty()
     resized_flag = False
     camera = Camera()
     generate_enemies(3)
+    MainCharacter = Player(width // 2, height // 2)
     n_enemies = 0
     # Musketeer(500, 500)
     # Magician(600, 600)
@@ -696,6 +745,8 @@ def level1(screen):
 
         trees_group.draw(screen)
         player_group.update(keys)
+        if bad_end_flag:
+            return
         player_group.draw(screen)
         MCbullet_group.update()
         MCbullet_group.draw(screen)
@@ -798,18 +849,22 @@ v_damage_delay = 120
 firing_range = 250
 musketeer_firing_delay = 60
 
-MainCharacter = Player(width // 2, height // 2)
-
 clock = pygame.time.Clock()
 FPS = 60
 
+bad_end_flag = False
+exit_flag = False
 """
 player, level_x, level_y = generate_level(load_level('lvl1.txt'))
 """
 
-if __name__ == '__main__':
-    start_screen()
-    comic()
-    level1(screen)
-    final_screen()
-    terminate()
+while True:
+    if __name__ == '__main__':
+        start_screen()
+        comic()
+        level1(screen)
+        if bad_end_flag:
+            bad_end()
+            continue
+        final_screen()
+        terminate()
