@@ -395,16 +395,19 @@ class Villager(pygame.sprite.Sprite):
 class Musketeer(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y):
         super().__init__(enemy_group, all_sprites)
-        self.frames_amount = len(musketeer_media['moving'])
-        self.frames = {'l': musketeer_media['moving'],
+        self.shot_freq = musketeer_firing_delay
+        self.load_animation(pos_x, pos_y, musketeer_media)
+
+    def load_animation(self, pos_x, pos_y, media):
+        self.frames_amount = len(media['moving'])
+        self.frames = {'l': media['moving'],
                        'r': list(map(lambda pic:
                                      pygame.transform.flip(pic, True, False),
-                                     musketeer_media['moving']))}
+                                     media['moving']))}
         self.cur_frame = 0
         self.frame_delay = 15
         self.time_counter = 0
         self.shot_counter = 0
-        self.shot_freq = 60
         self.save_dir = 'r'
         self.image = make_img(self.frames[self.save_dir][0], width, height, MC_width, MC_height)
         self.rect = self.image.get_rect().move(
@@ -418,10 +421,9 @@ class Musketeer(pygame.sprite.Sprite):
         perp_y = y2 - y1
 
         dist = (perp_x ** 2 + perp_y ** 2) ** 0.5
-        self.shot_counter += 1
-        if dist < 1000 and self.shot_counter >= self.shot_freq:
-            self.shot_counter = 0
-            Bullet((x1, y1), (x2, y2), True)
+
+        self.shot(x2, y2, dist)
+
         if dist != 0:
             vx = (perp_x / dist) * norm_v
             vy = (perp_y / dist) * norm_v
@@ -430,7 +432,9 @@ class Musketeer(pygame.sprite.Sprite):
                 self.kill()
             else:
                 self.rect = self.rect.move(vx, vy)
+        self.animation(perp_x, perp_y)
 
+    def animation(self, perp_x, perp_y):
         l, r, f, d = '', '', '', ''
         if perp_y > 0:
             d = 'd'
@@ -464,6 +468,13 @@ class Musketeer(pygame.sprite.Sprite):
                     self.image = make_img(self.frames[self.save_dir[0]][0], width, height, MC_width, MC_height)
             self.prev_direction = cur_direction
             self.time_counter = 0
+
+    def shot(self, x2, y2, dist):
+        self.shot_counter += 1
+        x1, y1 = self.rect.x, self.rect.y
+        if dist < 1000 and self.shot_counter >= self.shot_freq:
+            self.shot_counter = 0
+            Bullet((x1, y1), (x2, y2), True)
 
     def resize(self, SW, SH):
         global MCbullet_width, MCbullet_height, width, height
@@ -642,6 +653,7 @@ tree_width = tree_height = 100
 Ntrees_horz, Ntrees_vert = 30, 18
 
 firing_range = 250
+musketeer_firing_delay = 60
 
 MainCharacter = Player(width // 2, height // 2)
 
