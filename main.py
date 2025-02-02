@@ -1,7 +1,7 @@
 import pygame, os, sys
+from random import randint
 from PIL import Image
-from math import *
-
+from math import atan2, hypot, degrees
 
 pygame.init()
 pygame.display.set_caption('Walking')
@@ -11,7 +11,7 @@ screen = pygame.display.set_mode(size, pygame.RESIZABLE, pygame.FULLSCREEN)
 
 
 def load_image(name, colorkey=None):
-    fullname = os.path.join(f'data\{name}')
+    fullname = os.path.join(f'data/{name}')
     if not os.path.isfile(fullname):
         print(f"Файл с изображением '{fullname}' не найден")
         sys.exit()
@@ -92,37 +92,87 @@ def generate_level(level):
 """
 
 
+# test
+
+
 def terminate():
     pygame.quit()
     sys.exit()
 
 
 def start_screen():
-    intro_text = ["ЗАСТАВКА", "",
-                  "Правила игры",
-                  "Если в правилах несколько строк,",
-                  "приходится выводить их построчно"]
+    cursor = Cursor()
+    all_sprites.add(cursor)
+    cursor_group.add(cursor)
+    flag = True
+    pygame.mouse.set_visible(False)
+    start_button = Button(500, 200, (350, 100))
+    start_button.set_image('start_screen/startbutton/sprite_0.png')
 
-    fon = pygame.transform.scale(load_image('fon.jpg'), (width, height))
-    screen.blit(fon, (0, 0))
-    font = pygame.font.Font(None, 40)
-    text_coord = 50
-    for line in intro_text:
-        string_rendered = font.render(line, 1, pygame.Color('black'))
-        intro_rect = string_rendered.get_rect()
-        text_coord += 30
-        intro_rect.top = text_coord
-        intro_rect.x = 30
-        text_coord += intro_rect.height
-        screen.blit(string_rendered, intro_rect)
+    exit_button = Button(500, 350, (350, 100))
+    exit_button.set_image('start_screen/exitbutton/exitbutton_0.png')
+
+    non_stop_button = Button(500, 500, (350, 100))
+    non_stop_button.set_image('start_screen/nonstopbutton/nonstop_0.png')
 
     while True:
+        screen.fill(pygame.Color('black'))
+        fon = pygame.transform.scale(load_image('/start_screen/start_background.png'), (width, height))
+        screen.blit(fon, (0, 0))
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
-            elif event.type == pygame.KEYDOWN or \
-                    event.type == pygame.MOUSEBUTTONDOWN:
-                return  # начинаем игру
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    if pygame.sprite.spritecollideany(start_button, cursor_group):
+                        cursor.kill()
+                        button_group.empty()
+                        return
+                    if pygame.sprite.spritecollideany(exit_button, cursor_group):
+                        terminate()
+
+            if event.type == pygame.MOUSEMOTION:
+                cords = event.pos
+                flag = pygame.mouse.get_focused()
+                cursor.rect.x, cursor.rect.y = cords
+        button_group.update()
+        button_group.draw(screen)
+        cursor_group.draw(screen)
+        pygame.display.flip()
+        clock.tick(FPS)
+
+
+def comic():
+    cursor = Cursor()
+    all_sprites.add(cursor)
+    cursor_group.add(cursor)
+    flag = True
+    pygame.mouse.set_visible(False)
+    start_button = Button(0, 700, (300, 80))
+    start_button.set_image('start_screen/startbutton/sprite_0.png')
+
+    while True:
+        screen.fill(pygame.Color('black'))
+        fon = pygame.transform.scale(load_image('start_screen/comic.png'), (width, height))
+        screen.blit(fon, (0, 0))
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                terminate()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    if pygame.sprite.spritecollideany(start_button, cursor_group):
+                        cursor.kill()
+                        return
+
+            if event.type == pygame.MOUSEMOTION:
+                cords = event.pos
+                flag = pygame.mouse.get_focused()
+                cursor.rect.x, cursor.rect.y = cords
+        button_group.update()
+        button_group.draw(screen)
+        cursor_group.draw(screen)
         pygame.display.flip()
         clock.tick(FPS)
 
@@ -184,15 +234,23 @@ class Player(pygame.sprite.Sprite):
         self.frames = {'l': player_media['moving'],
                        'r': list(map(lambda pic:
                                      pygame.transform.flip(pic, True, False),
-                                     player_media['moving']))}
+                                     player_media['moving'])),
+                       'lh': player_media['moving_h'],
+                       'rh': list(map(lambda pic:
+                                      pygame.transform.flip(pic, True, False),
+                                      player_media['moving_h']))
+                       }
         self.cur_frame = 0
-        self.frame_delay = 3
+        self.frame_delay = 8
         self.time_counter = 0
         self.save_dir = 'r'
         self.image = make_img(self.frames[self.save_dir][0], width, height, MC_width, MC_height)
         self.rect = self.image.get_rect().move(
-             pos_x + 15, pos_y + 5)
+            pos_x + 15, pos_y + 5)
         self.prev_direction = ''
+        self.hp = MC_hp
+        self.hit = False
+        self.time = 0
 
     def resize(self, SW, SH):
         global MC_width, MC_height, width, height
@@ -202,6 +260,19 @@ class Player(pygame.sprite.Sprite):
         MC_width, MC_height = new_W, new_H
 
     def update(self, keys, vx=0, vy=0):
+        if self.hp <= 0:
+            self.kill()
+        if pygame.sprite.spritecollide(self, musketeer_bullet_group, dokill=True):
+            self.hit = True
+            self.hp -= Musk_damage
+        if pygame.sprite.spritecollide(self, magician_bullet_group, dokill=True):
+            self.hit = True
+            self.hp -= Mag_damage
+        if pygame.sprite.spritecollideany(self, enemy_group) and self.time >= v_damage_delay:
+            self.hit = True
+            self.hp -= Vil_damage
+            self.time = 0
+
         l, r, f, d = '', '', '', ''
         if not keys[pygame.K_SPACE]:
             if keys[pygame.K_a]:
@@ -220,8 +291,8 @@ class Player(pygame.sprite.Sprite):
             cur_direction = l + r + f + d
 
             if abs(vx) == abs(vy) == mc_def_v:
-                vx = vx / (2 ** 0.5)
-                vy = vy / (2 ** 0.5)
+                vx = vx / (2 ** 0.5) + 1
+                vy = vy / (2 ** 0.5) + 1
 
             self.rect.x += vx
             if pygame.sprite.spritecollideany(self, trees_group):
@@ -237,33 +308,50 @@ class Player(pygame.sprite.Sprite):
             if self.time_counter >= self.frame_delay:
                 self.cur_frame = (self.cur_frame + 1) % self.frames_amount
                 if cur_direction not in 'fd ':
-                    self.image = make_img(self.frames[cur_direction[0]][self.cur_frame], width, height, MC_width, MC_height)
+                    self.image = make_img(self.frames[cur_direction[0] + ('h' if self.hit else '')][self.cur_frame],
+                                          width, height, MC_width, MC_height)
                 else:
                     if cur_direction in 'fd':
-                        if self.prev_direction not in 'fd ': # не пауза фд == норм двиэ
+                        if self.prev_direction not in 'fd ':  # не пауза фд == норм двиэ
                             self.save_dir = self.prev_direction
-                            self.image = make_img(self.frames[self.save_dir[0]][self.cur_frame], width, height, MC_width, MC_height)
-                        elif self.prev_direction not in ' ':    # == fd
-                            self.image = make_img(self.frames[self.save_dir[0]][self.cur_frame], width, height, MC_width, MC_height)
+                            self.image = make_img(
+                                self.frames[self.save_dir[0] + ('h' if self.hit else '')][self.cur_frame], width,
+                                height, MC_width, MC_height)
+                        elif self.prev_direction not in ' ':  # == fd
+                            self.image = make_img(
+                                self.frames[self.save_dir[0] + ('h' if self.hit else '')][self.cur_frame], width,
+                                height, MC_width, MC_height)
                         else:
                             self.cur_frame = 0
-                            self.image = make_img(self.frames[self.save_dir[0]][self.cur_frame], width, height, MC_width, MC_height)
+                            self.image = make_img(
+                                self.frames[self.save_dir[0] + ('h' if self.hit else '')][self.cur_frame], width,
+                                height, MC_width, MC_height)
                     else:
-                        self.image = make_img(self.frames[self.save_dir[0]][0], width, height, MC_width, MC_height)
+                        self.image = make_img(self.frames[self.save_dir[0] + ('h' if self.hit else '')][0], width,
+                                              height, MC_width, MC_height)
                 self.prev_direction = cur_direction
                 self.time_counter = 0
+                self.hit = False
 
         else:
             self.rect.x, self.rect.y = width // 2, height // 2
+        self.time += 1
 
 
-class MCBullet(pygame.sprite.Sprite):
-    def __init__(self, MC_coords, mouse_coords):
-        super().__init__(MCbullet_group, all_sprites)
-        self.image = tile_images['MC_bullet']
+class Bullet(pygame.sprite.Sprite):
+    def __init__(self, MC_coords, mouse_coords, enemy=''):
+        if not enemy:
+            super().__init__(MCbullet_group, all_sprites)
+            self.image = tile_images['MC_bullet']
+        elif enemy == 'Musketeer':
+            super().__init__(musketeer_bullet_group, all_sprites)
+            self.image = tile_images['MC_bullet']
+        else:
+            super().__init__(magician_bullet_group, all_sprites)
+            self.image = tile_images['magician_bullet']
         self.image = make_img(self.image, width, height, MCbullet_width, MCbullet_height)
         self.rect = self.image.get_rect().move(
-             MC_coords[0] + MCbullet_width // 5.5, MC_coords[1] + MCbullet_height // 2)
+            MC_coords[0] + MCbullet_width // 5.5, MC_coords[1] + MCbullet_height // 2)
 
         self.speed = bullet_def_v
         vx = (mouse_coords[0] - MCbullet_width // 2) - MC_coords[0]
@@ -274,6 +362,7 @@ class MCBullet(pygame.sprite.Sprite):
 
         self.angle = degrees(atan2(-vy, vx))
         self.image = pygame.transform.rotate(self.image, self.angle)
+        self.dist = 0
 
     def resize(self, SW, SH):
         global MCbullet_width, MCbullet_height, width, height
@@ -283,24 +372,261 @@ class MCBullet(pygame.sprite.Sprite):
         MCbullet_width, MCbullet_height = new_W, new_H
 
     def update(self):
+        if self.dist > firing_range:
+            self.kill()
         if not -MCbullet_width <= self.rect.x <= width + MCbullet_width or \
                 not -MCbullet_height <= self.rect.y <= height + MCbullet_height:
             self.kill()
         else:
+            self.dist += hypot(self.rect.x - (self.rect.x + self.vx), self.rect.y - (self.rect.y + self.vy))
             self.rect.x += self.vx
             self.rect.y += self.vy
 
 
-class Enemy(pygame.sprite.Sprite):
+class Villager(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y):
-        super().__init__(enemies_group, all_sprites)
-        self.images = enemy_images
-        self.image = make_img(self.images['stay'], width, height, MC_width, MC_height)
+        super().__init__(enemy_group, all_sprites)
+        self.frames_amount = len(villager_media['moving'])
+        self.frames = {'l': villager_media['moving'],
+                       'lh': villager_media['moving_h'],
+                       'r': list(map(lambda pic:
+                                     pygame.transform.flip(pic, True, False),
+                                     villager_media['moving'])),
+                       'rh': list(map(lambda pic:
+                                      pygame.transform.flip(pic, True, False),
+                                      villager_media['moving_h']))}
+        self.cur_frame = 0
+        self.frame_delay = 15
+        self.time_counter = 0
+        self.save_dir = 'r'
+        self.image = make_img(self.frames[self.save_dir][0], width, height, MC_width, MC_height)
         self.rect = self.image.get_rect().move(
             pos_x + 15, pos_y + 5)
-        self.direction = 'f'
+        self.prev_direction = ''
+        self.hp = Vil_hp
+        self.hit = False
 
-    def update(self, *args, **kwargs):
+    def update(self, x2, y2, norm_v=3 / (2 ** 0.5)):
+        if self.hp <= 0:
+            self.kill()
+
+        if pygame.sprite.spritecollide(self, MCbullet_group, dokill=True):
+            self.hit = True
+            self.hp -= MC_damage
+
+        x1, y1 = self.rect.x, self.rect.y
+
+        perp_x = x2 - x1
+        perp_y = y2 - y1
+
+        dist = (perp_x ** 2 + perp_y ** 2) ** 0.5
+        if dist != 0:
+            vx = (perp_x / dist) * norm_v
+            vy = (perp_y / dist) * norm_v
+            if not (pygame.sprite.spritecollideany(self, MCbullet_group)):
+                self.rect = self.rect.move(vx, vy)
+
+        l, r, f, d = '', '', '', ''
+        if perp_y > 0:
+            d = 'd'
+        if perp_y < 0:
+            f = 'f'
+        if perp_x > 0:
+            l = 'l'
+        if perp_x < 0:
+            r = 'r'
+        cur_direction = l + r + f + d
+
+        self.time_counter += 1
+        if self.time_counter >= self.frame_delay:
+            self.cur_frame = (self.cur_frame + 1) % self.frames_amount
+            if cur_direction not in 'fd ':
+                self.image = make_img(self.frames[cur_direction[0] + ('h' if self.hit else '')][self.cur_frame], width,
+                                      height, MC_width, MC_height)
+            else:
+                if cur_direction in 'fd':
+                    if self.prev_direction not in 'fd ':  # не пауза фд == норм двиэ
+                        self.save_dir = self.prev_direction
+                        self.image = make_img(self.frames[self.save_dir[0] + ('h' if self.hit else '')][self.cur_frame],
+                                              width, height, MC_width, MC_height)
+                    elif self.prev_direction not in ' ':  # == fd
+                        self.image = make_img(self.frames[self.save_dir[0] + ('h' if self.hit else '')][self.cur_frame],
+                                              width, height, MC_width, MC_height)
+                    else:
+                        self.cur_frame = 0
+                        self.image = make_img(self.frames[self.save_dir[0] + ('h' if self.hit else '')][self.cur_frame],
+                                              width, height, MC_width, MC_height)
+                else:
+                    self.image = make_img(self.frames[self.save_dir[0] + ('h' if self.hit else '')][0], width, height,
+                                          MC_width, MC_height)
+            self.prev_direction = cur_direction
+            self.time_counter = 0
+            self.hit = False
+
+    def resize(self, SW, SH):
+        global MCbullet_width, MCbullet_height, width, height
+        new_W, new_H = MCbullet_width * (SW / width), MCbullet_height * (SH / height)
+        self.image = pygame.transform.scale(self.image,
+                                            (new_W, new_H))
+        MCbullet_width, MCbullet_height = new_W, new_H
+
+
+class Musketeer(pygame.sprite.Sprite):
+    def __init__(self, pos_x, pos_y):
+        super().__init__(enemy_group, all_sprites)
+        self.shot_freq = musketeer_firing_delay
+        self.load_animation(pos_x, pos_y, musketeer_media)
+        self.hp = Musk_hp
+        self.hit = False
+
+    def load_animation(self, pos_x, pos_y, media):
+        self.frames_amount = len(media['moving'])
+        self.frames = {'l': media['moving'],
+                       'lh': media['moving_h'],
+                       'r': list(map(lambda pic:
+                                     pygame.transform.flip(pic, True, False),
+                                     media['moving'])),
+                       'rh': list(map(lambda pic:
+                                      pygame.transform.flip(pic, True, False),
+                                      media['moving_h']))}
+        self.cur_frame = 0
+        self.frame_delay = 15
+        self.time_counter = 0
+        self.shot_counter = 0
+        self.save_dir = 'r'
+        self.image = make_img(self.frames[self.save_dir][0], width, height, MC_width, MC_height)
+        self.rect = self.image.get_rect().move(
+            pos_x + 15, pos_y + 5)
+        self.prev_direction = ''
+
+    def update(self, x2, y2, norm_v=3 / (2 ** 0.5)):
+        if self.hp <= 0:
+            self.kill()
+
+        if pygame.sprite.spritecollide(self, MCbullet_group, dokill=True):
+            self.hit = True
+            self.hp -= MC_damage
+
+        x1, y1 = self.rect.x, self.rect.y
+
+        perp_x = x2 - x1
+        perp_y = y2 - y1
+
+        dist = (perp_x ** 2 + perp_y ** 2) ** 0.5
+
+        self.shot(x2, y2, dist)
+
+        if dist != 0:
+            vx = (perp_x / dist) * norm_v
+            vy = (perp_y / dist) * norm_v
+            if pygame.sprite.spritecollideany(self, MCbullet_group):
+                pygame.sprite.spritecollide(self, MCbullet_group, dokill=True)
+                self.kill()
+            else:
+                self.rect = self.rect.move(vx, vy)
+        self.animation(perp_x, perp_y)
+
+    def animation(self, perp_x, perp_y):
+        l, r, f, d = '', '', '', ''
+        if perp_y > 0:
+            d = 'd'
+        if perp_y < 0:
+            f = 'f'
+        if perp_x > 0:
+            l = 'l'
+        if perp_x < 0:
+            r = 'r'
+        cur_direction = l + r + f + d
+
+        self.time_counter += 1
+        if self.time_counter >= self.frame_delay:
+            self.cur_frame = (self.cur_frame + 1) % self.frames_amount
+            if cur_direction not in 'fd ':
+                self.image = make_img(self.frames[cur_direction[0] + ('h' if self.hit else '')][self.cur_frame], width,
+                                      height, MC_width, MC_height)
+            else:
+                if cur_direction in 'fd':
+                    if self.prev_direction not in 'fd ':  # не пауза фд == норм двиэ
+                        self.save_dir = self.prev_direction
+                        self.image = make_img(self.frames[self.save_dir[0] + ('h' if self.hit else '')][self.cur_frame],
+                                              width, height, MC_width, MC_height)
+                    elif self.prev_direction not in ' ':  # == fd
+                        self.image = make_img(self.frames[self.save_dir[0] + ('h' if self.hit else '')][self.cur_frame],
+                                              width, height, MC_width, MC_height)
+                    else:
+                        self.cur_frame = 0
+                        self.image = make_img(self.frames[self.save_dir[0] + ('h' if self.hit else '')][self.cur_frame],
+                                              width, height, MC_width, MC_height)
+                else:
+                    self.image = make_img(self.frames[self.save_dir[0] + ('h' if self.hit else '')][0], width, height,
+                                          MC_width, MC_height)
+            self.prev_direction = cur_direction
+            self.time_counter = 0
+            self.hit = False
+
+    def shot(self, x2, y2, dist):
+        self.shot_counter += 1
+        x1, y1 = self.rect.x, self.rect.y
+        if dist < 1000 and self.shot_counter >= self.shot_freq:
+            self.shot_counter = 0
+            Bullet((x1, y1), (x2, y2), 'Musketeer')
+
+    def resize(self, SW, SH):
+        global MCbullet_width, MCbullet_height, width, height
+        new_W, new_H = MCbullet_width * (SW / width), MCbullet_height * (SH / height)
+        self.image = pygame.transform.scale(self.image,
+                                            (new_W, new_H))
+        MCbullet_width, MCbullet_height = new_W, new_H
+
+
+class Magician(Musketeer):
+    def __init__(self, pos_x, pos_y):
+        super().__init__(pos_x, pos_y)
+        self.load_animation(pos_x, pos_y, magician_media)
+        self.hp = Mag_hp
+
+    def shot(self, x2, y2, dist):
+        self.shot_counter += 1
+        x1, y1 = self.rect.x, self.rect.y
+        if dist < 1000 and self.shot_counter >= self.shot_freq:
+            self.shot_counter = 0
+            Bullet((x1, y1), (x2, y2), 'Magician')
+
+
+class Button(pygame.sprite.Sprite):
+    def __init__(self, pos_x, pos_y, size):
+        super().__init__(button_group, all_sprites)
+        self.size = size
+        self.pos_x = pos_x
+        self.pos_y = pos_y
+
+    def set_image(self, way):
+        self.way = way
+        self.image = load_image(way)
+        self.image = pygame.transform.scale(self.image, (self.size[0], self.size[1]))
+        self.rect = self.image.get_rect().move(self.pos_x + 15, self.pos_y + 5)
+
+    def resize(self, SW, SH):
+        global MCbullet_width, MCbullet_height, width, height
+        new_W, new_H = MCbullet_width * (SW / width), MCbullet_height * (SH / height)
+        self.image = pygame.transform.scale(self.image,
+                                            (new_W, new_H))
+        MCbullet_width, MCbullet_height = new_W, new_H
+
+    def update(self):
+        if pygame.sprite.spritecollideany(self, cursor_group):
+            self.set_image(self.way[:-5] + '1.png')
+        else:
+            self.set_image(self.way[:-5] + '0.png')
+
+
+class Cursor(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__(player_group, all_sprites)
+        self.image = load_image('/start_screen/cursor.png')
+        self.rect = self.image.get_rect()
+
+    def resize(self, SW, SH):
         ...
 
 
@@ -314,20 +640,30 @@ class Camera:
         obj.rect.y += self.dy
 
     def update(self, target):
-        self.dx = 0 #-(target.rect.x + target.rect.w // 2 - width // 2) - tile_width
-        self.dy = 0 #-(target.rect.y + target.rect.h // 2 - height // 2) - tile_height
+        self.dx = 0  # -(target.rect.x + target.rect.w // 2 - width // 2) - tile_width
+        self.dy = 0  # -(target.rect.y + target.rect.h // 2 - height // 2) - tile_height
 
 
 def level1(screen):
     global background, width, height
     resized_flag = False
     camera = Camera()
+    generate_enemies(3)
+    n_enemies = 0
+    # Musketeer(500, 500)
+    # Magician(600, 600)
 
+    pygame.mouse.set_visible(True)
     while True:
         screen.fill('black')
         screen.blit(background, (0, 0))
         keys = pygame.key.get_pressed()
         generate_borders(width, height)
+
+        if n_enemies < 15:
+            if len(enemy_group) < 2:
+                generate_enemies(n := randint(1, 5))
+                n_enemies += n
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -343,7 +679,7 @@ def level1(screen):
                 background = pygame.transform.scale(background, (new_SW, new_SH))
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
-                    MCBullet((MainCharacter.rect.x, MainCharacter.rect.y), event.pos)
+                    Bullet((MainCharacter.rect.x, MainCharacter.rect.y), event.pos)
 
         camera.update(MainCharacter)
         for sprite in all_sprites:
@@ -359,7 +695,13 @@ def level1(screen):
         player_group.draw(screen)
         MCbullet_group.update()
         MCbullet_group.draw(screen)
-        enemies_group.draw(screen)
+        enemy_group.update(MainCharacter.rect.x, MainCharacter.rect.y)
+        enemy_group.draw(screen)
+        musketeer_bullet_group.update()
+        musketeer_bullet_group.draw(screen)
+        magician_bullet_group.update()
+        magician_bullet_group.draw(screen)
+        draw_hp_bar(screen, 25, 25, MainCharacter.hp)
 
         pygame.display.flip()
         clock.tick(FPS)
@@ -380,33 +722,79 @@ def generate_borders(w, h):
         Tree(w - tree_width, i * vert_step)
 
 
+def generate_enemies(n):
+    for _ in range(n):
+        side = randint(1, 4)
+        if side == 1:
+            Villager(0, randint(0, height))
+        elif side == 2:
+            Villager(randint(0, width), 0)
+        elif side == 4:
+            Villager(width, randint(0, height))
+        else:
+            Villager(randint(0, width), height)
+
+
+def draw_hp_bar(screen, x, y, pct):
+    if pct < 0:
+        pct = 0
+    heart = tile_images['heart']
+    screen.blit(heart, (0, 20))
+    fill = (pct / 100) * BAR_LENGTH
+    outline_rect = pygame.Rect(x, y, BAR_LENGTH, BAR_HEIGHT)
+    fill_rect = pygame.Rect(x, y, fill, BAR_HEIGHT)
+    pygame.draw.rect(screen, 'green', fill_rect)
+    pygame.draw.rect(screen, 'white', outline_rect, 2)
+
+
 all_sprites = pygame.sprite.Group()
+cursor_group = pygame.sprite.Group()
 trees_group = pygame.sprite.Group()
 player_group = pygame.sprite.Group()
 MCbullet_group = pygame.sprite.Group()
-enemies_group = pygame.sprite.Group()
+enemy_group = pygame.sprite.Group()
+musketeer_bullet_group = pygame.sprite.Group()
+magician_bullet_group = pygame.sprite.Group()
+button_group = pygame.sprite.Group()
+
+BAR_LENGTH, BAR_HEIGHT = 200, 20
 
 tile_images = {
-    'tree': load_image(r'game\tree.png'),
-    'MC_bullet': load_image(r'game\Bullet.png')
+    'tree': load_image(r'game/tree.png'),
+    'MC_bullet': load_image(r'game/Bullet.png'),
+    'magician_bullet': load_image(r'game/magic_bullet.png'),
+    'heart': pygame.transform.scale(load_image(r'game/heart.png'), (BAR_HEIGHT + 10, BAR_HEIGHT + 10))
 }
 
-background = pygame.transform.scale(load_image(r'game\background1.jpg'), (width, height))
+background = pygame.transform.scale(load_image(r'game/background1.jpg'), (width, height))
 
-player_media = {'moving': convert_gif(r'game\MC_moving\MCwalk.gif')}
-enemy_images = {'stay': load_image(r'game\enemy\EK.png')}
+player_media = {'moving': [load_image(f'/game/horse/horse_{i}.png') for i in range(6)],
+                'moving_h': [load_image(f'/game/horse_hit/horse_hit_{i}.png') for i in range(6)]}
+villager_media = {'moving': [load_image(f'/game/enemy/villager/sprite_{i}.png') for i in range(4)],
+                  'moving_h': [load_image(f'/game/enemy/villager/villager_hit_{i}.png') for i in range(4)]}
+musketeer_media = {'moving': [load_image(f'/game/enemy/musketeer/musketeer{i}.png') for i in range(4)],
+                   'moving_h': [load_image(f'/game/enemy/musketeer/musketeer_hit_{i}.png') for i in range(4)]}
+magician_media = {'moving': [load_image(f'/game/enemy/magician/magician_{i}.png') for i in range(2)],
+                  'moving_h': [load_image(f'/game/enemy/magician/magician_hit_{i}.png') for i in range(2)]}
+enemy_images = {'stay': load_image(r'game/enemy/EK.png')}
 
 angles_dict = {'f': ...}
 
-MC_width, MC_height = 50, 70
+MC_width, MC_height = 80, 80
 mc_def_v = 7
 MCbullet_width, MCbullet_height = 40, 40
 bullet_def_v = 20
 tree_width = tree_height = 100
 Ntrees_horz, Ntrees_vert = 30, 18
 
+MC_hp, Vil_hp, Musk_hp, Mag_hp = 100, 100, 75, 150
+MC_damage, Vil_damage, Musk_damage, Mag_damage = 10, 10, 10, 10
+v_damage_delay = 120
+
+firing_range = 250
+musketeer_firing_delay = 60
+
 MainCharacter = Player(width // 2, height // 2)
-Enemies = Enemy(width // 2, height // 2)
 
 clock = pygame.time.Clock()
 FPS = 60
@@ -415,9 +803,9 @@ FPS = 60
 player, level_x, level_y = generate_level(load_level('lvl1.txt'))
 """
 
-
 if __name__ == '__main__':
     start_screen()
+    comic()
     level1(screen)
     final_screen()
     terminate()
