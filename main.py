@@ -572,7 +572,7 @@ class Musketeer(pygame.sprite.Sprite):
     def shot(self, x2, y2, dist):
         self.shot_counter += 1
         x1, y1 = self.rect.x, self.rect.y
-        if dist < 1000 and self.shot_counter >= self.shot_freq:
+        if dist < enemies_firing_range and self.shot_counter >= self.shot_freq:
             self.shot_counter = 0
             Bullet((x1, y1), (x2, y2), 'Musketeer')
 
@@ -650,15 +650,35 @@ class Camera:
 
 
 def wave1(screen):
-    global background, width, height
+    global width, height
+    MainCharacter.rect.x, MainCharacter.rect.y = width // 2, height // 2
+    pygame.mouse.set_visible(True)
+
+    update_level(screen, Villager)
+
+
+def wave2(screen):
+    global width, height
+    MainCharacter.rect.x, MainCharacter.rect.y = width // 2, height // 2
+    pygame.mouse.set_visible(True)
+
+    update_level(screen, Musketeer)
+
+
+def wave3(screen):
+    global width, height
+    MainCharacter.rect.x, MainCharacter.rect.y = width // 2, height // 2
+    pygame.mouse.set_visible(True)
+
+    update_level(screen, Magician)
+
+
+def update_level(screen, enemy):
+    global width, height, background, cur_wave
     resized_flag = False
     camera = Camera()
-    generate_enemies(3, Villager)
+    generate_enemies(3, enemy)
     n_enemies = 0
-    # Musketeer(500, 500)
-    # Magician(600, 600)
-
-    pygame.mouse.set_visible(True)
     while True:
         screen.fill('black')
         screen.blit(background, (0, 0))
@@ -667,7 +687,7 @@ def wave1(screen):
 
         if n_enemies < 15:
             if len(enemy_group) < 2:
-                generate_enemies(n := randint(1, 5), Villager)
+                generate_enemies(n := randint(1, 5), enemy)
                 n_enemies += n
         else:
             if len(enemy_group) == 0:
@@ -676,74 +696,10 @@ def wave1(screen):
                             (height // 2 - tree_height) <= tree.rect.y <= (height // 2 + tree_height)):
                         tree.kill()
             if MainCharacter.rect.x > width:
-                wave2(screen)
+                cur_wave += 1
+                if cur_wave <= 2:
+                    waves[cur_wave](screen)
                 return
-
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                terminate()
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_q:
-                return
-            if event.type == pygame.VIDEORESIZE:
-                new_width = max(event.w, min_width)
-                new_height = max(event.h, min_height)
-                screen = pygame.display.set_mode((new_width, new_height), pygame.RESIZABLE)
-                resized_flag = True
-                new_SW, new_SH = new_width, new_height
-                background = pygame.transform.scale(background, (new_SW, new_SH))
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 1:
-                    Bullet((MainCharacter.rect.x, MainCharacter.rect.y), event.pos)
-
-        camera.update(MainCharacter)
-        for sprite in all_sprites:
-            if resized_flag:
-                sprite.resize(new_SW, new_SH)
-            camera.apply(sprite)
-        if resized_flag:
-            width, height = new_SW, new_SH
-        resized_flag = False
-
-        trees_group.draw(screen)
-        player_group.update(keys)
-        player_group.draw(screen)
-        MCbullet_group.update()
-        MCbullet_group.draw(screen)
-        enemy_group.update(MainCharacter.rect.x, MainCharacter.rect.y)
-        enemy_group.draw(screen)
-        draw_hp_bar(screen, 25, 25, MainCharacter.hp)
-
-        pygame.display.flip()
-        clock.tick(FPS)
-
-
-def wave2(screen):
-    global width, height, background
-    resized_flag = False
-    camera = Camera()
-    generate_enemies(3, Musketeer)
-    n_enemies = 0
-    MainCharacter.rect.x, MainCharacter.rect.y = width // 2, height // 2
-    # Musketeer(500, 500)
-    # Magician(600, 600)
-
-    pygame.mouse.set_visible(True)
-    while True:
-        screen.fill('black')
-        screen.blit(background, (0, 0))
-        keys = pygame.key.get_pressed()
-        generate_borders(width, height)
-
-        if n_enemies < 15:
-            if len(enemy_group) < 2:
-                generate_enemies(n := randint(1, 5), Musketeer)
-                n_enemies += n
-        else:
-            if len(enemy_group) == 0:
-                for tree in trees_group:
-                    if (tree.rect.x == width - tree_width and
-                            (height // 2 - tree_height) <= tree.rect.y <= (height // 2 + tree_height)):
-                        tree.kill()
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -779,6 +735,8 @@ def wave2(screen):
         enemy_group.draw(screen)
         musketeer_bullet_group.update()
         musketeer_bullet_group.draw(screen)
+        magician_bullet_group.update()
+        magician_bullet_group.draw(screen)
         draw_hp_bar(screen, 25, 25, MainCharacter.hp)
 
         pygame.display.flip()
@@ -874,6 +832,9 @@ MC_firing_range = 300
 musketeer_firing_delay = 300
 
 MainCharacter = Player(width // 2, height // 2)
+
+waves = [wave1, wave2, wave3]
+cur_wave = 0
 
 clock = pygame.time.Clock()
 FPS = 60
