@@ -730,7 +730,6 @@ def update_level(screen, enemy):
     enemy_group.empty()
     resized_flag = False
     camera = Camera()
-    MainCharacter = Player(width // 2, height // 2)
     generate_enemies(3, enemy)
     n_enemies = 0
     while True:
@@ -843,9 +842,12 @@ def draw_hp_bar(screen, x, y, pct):
 
 
 def enemy_hp_bar(self, x, y, cur_hp):
-    if isinstance(self, Villager):  color = 'purple'
-    elif isinstance(self, Musketeer):   color = 'pink'
-    elif isinstance(self, Magician):    color = 'red'
+    if isinstance(self, Villager):
+        color = 'purple'
+    elif isinstance(self, Musketeer):
+        color = 'pink'
+    elif isinstance(self, Magician):
+        color = 'red'
     outline_rect = pygame.Rect(x, y - ENEMY_BAR_HEIGHT * 2, ENEMY_BAR_LENGTH, ENEMY_BAR_HEIGHT)
     cur_hp = (cur_hp / 100) * ENEMY_BAR_LENGTH
     fill_rect = pygame.Rect(x, y - ENEMY_BAR_HEIGHT * 2, cur_hp, ENEMY_BAR_HEIGHT)
@@ -904,7 +906,6 @@ musketeer_firing_delay = 300
 
 ENEMY_BAR_LENGTH, ENEMY_BAR_HEIGHT = UNIT_width, 10
 
-
 waves = [wave1, wave2, wave3]
 cur_wave = 0
 
@@ -921,6 +922,7 @@ if __name__ == '__main__':
     while True:
         start_screen()
         comic()
+        MainCharacter = Player(width // 2, height // 2)
         wave1(screen)
         if bad_end_flag:
             bad_end()
