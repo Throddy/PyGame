@@ -620,10 +620,10 @@ tile_images = {
 
 background = pygame.transform.scale(load_image(r'game/background1.jpg'), (width, height))
 
-player_media = {'moving': convert_gif(r'game\MC_moving\MCwalk.gif')}
+player_media = {'moving': convert_gif(r'game/MC_moving/MCwalk.gif')}
 villager_media = {'moving': [load_image(f'/game/enemy/villager/sprite_{i}.png')for i in range(4)]}
 musketeer_media = {'moving': [load_image(f'/game/enemy/musketeer/musketeer{i}.png')for i in range(4)]}
-enemy_images = {'stay': load_image(r'game\enemy\EK.png')}
+enemy_images = {'stay': load_image(r'game/enemy/EK.png')}
 
 angles_dict = {'f': ...}
 
