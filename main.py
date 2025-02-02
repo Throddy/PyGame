@@ -102,31 +102,43 @@ def terminate():
 
 
 def start_screen():
-    intro_text = ["ЗАСТАВКА", "",
-                  "Правила игры",
-                  "Если в правилах несколько строк,",
-                  "приходится выводить их построчно"]
+    cursor = Cursor()
+    all_sprites.add(cursor)
+    cursor_group.add(cursor)
+    flag = True
+    pygame.mouse.set_visible(False)
+    start_button = Button(500, 200, (350, 100))
+    start_button.set_image('start_screen/startbutton/sprite_0.png')
 
-    fon = pygame.transform.scale(load_image('fon.jpg'), (width, height))
-    screen.blit(fon, (0, 0))
-    font = pygame.font.Font(None, 40)
-    text_coord = 50
-    for line in intro_text:
-        string_rendered = font.render(line, 1, pygame.Color('black'))
-        intro_rect = string_rendered.get_rect()
-        text_coord += 30
-        intro_rect.top = text_coord
-        intro_rect.x = 30
-        text_coord += intro_rect.height
-        screen.blit(string_rendered, intro_rect)
+    exit_button = Button(500, 350, (350, 100))
+    exit_button.set_image('start_screen/exitbutton/exitbutton_0.png')
+
+    non_stop_button = Button(500, 500, (350, 100))
+    non_stop_button.set_image('start_screen/nonstopbutton/nonstop_0.png')
 
     while True:
+        screen.fill(pygame.Color('black'))
+        fon = pygame.transform.scale(load_image('/start_screen/start_background.png'), (width, height))
+        screen.blit(fon, (0, 0))
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
-            elif event.type == pygame.KEYDOWN or \
-                    event.type == pygame.MOUSEBUTTONDOWN:
-                return  # начинаем игру
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    if pygame.sprite.spritecollideany(start_button, cursor_group):
+                        cursor.kill()
+                        return
+                    if pygame.sprite.spritecollideany(exit_button, cursor_group):
+                        terminate()
+
+            if event.type == pygame.MOUSEMOTION:
+                cords = event.pos
+                flag = pygame.mouse.get_focused()
+                cursor.rect.x, cursor.rect.y = cords
+        button_group.update()
+        button_group.draw(screen)
+        cursor_group.draw(screen)
         pygame.display.flip()
         clock.tick(FPS)
 
@@ -453,6 +465,43 @@ class Musketeer(pygame.sprite.Sprite):
         MCbullet_width, MCbullet_height = new_W, new_H
 
 
+class Button(pygame.sprite.Sprite):
+    def __init__(self, pos_x, pos_y, size):
+        super().__init__(button_group, all_sprites)
+        self.size = size
+        self.pos_x = pos_x
+        self.pos_y = pos_y
+
+    def set_image(self, way):
+        self.way = way
+        self.image = load_image(way)
+        self.rect = self.image.get_rect().move(self.pos_x + 15, self.pos_y + 5)
+        self.image = pygame.transform.scale(self.image,(self.size[0], self.size[1]))
+
+    def resize(self, SW, SH):
+        global MCbullet_width, MCbullet_height, width, height
+        new_W, new_H = MCbullet_width * (SW / width), MCbullet_height * (SH / height)
+        self.image = pygame.transform.scale(self.image,
+                                            (new_W, new_H))
+        MCbullet_width, MCbullet_height = new_W, new_H
+
+    def update(self):
+        if pygame.sprite.spritecollideany(self, cursor_group):
+            self.set_image(self.way[:-5] + '1.png')
+        else:
+            self.set_image(self.way[:-5] + '0.png')
+
+
+class Cursor(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__(player_group, all_sprites)
+        self.image = load_image('/start_screen/cursor.png')
+        self.rect = self.image.get_rect()
+
+    def resize(self, SW, SH):
+        ...
+
+
 class Camera:
     def __init__(self):
         self.dx = 0
@@ -475,6 +524,7 @@ def level1(screen):
     n_enemies = 0
     Musketeer(500, 500)
 
+    pygame.mouse.set_visible(True)
     while True:
         screen.fill('black')
         screen.blit(background, (0, 0))
@@ -554,11 +604,13 @@ def generate_enemies(n):
 
 
 all_sprites = pygame.sprite.Group()
+cursor_group = pygame.sprite.Group()
 trees_group = pygame.sprite.Group()
 player_group = pygame.sprite.Group()
 MCbullet_group = pygame.sprite.Group()
 enemy_group = pygame.sprite.Group()
 enemies_bullet_group = pygame.sprite.Group()
+button_group = pygame.sprite.Group()
 
 tile_images = {
     'tree': load_image(r'game\tree.png'),
