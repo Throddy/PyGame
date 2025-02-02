@@ -724,9 +724,9 @@ def enemy_hp_bar(self, x, y, cur_hp):
     if isinstance(self, Villager):  color = 'purple'
     elif isinstance(self, Musketeer):   color = 'pink'
     elif isinstance(self, Magician):    color = 'red'
-    outline_rect = pygame.Rect(x, y - 20, ENEMY_BAR_LENGTH, ENEMY_BAR_HEIGHT)
+    outline_rect = pygame.Rect(x, y - ENEMY_BAR_HEIGHT * 2, ENEMY_BAR_LENGTH, ENEMY_BAR_HEIGHT)
     cur_hp = (cur_hp / 100) * ENEMY_BAR_LENGTH
-    fill_rect = pygame.Rect(x, y - 20, cur_hp, ENEMY_BAR_HEIGHT)
+    fill_rect = pygame.Rect(x, y - ENEMY_BAR_HEIGHT * 2, cur_hp, ENEMY_BAR_HEIGHT)
     pygame.draw.rect(screen, color, fill_rect)
     pygame.draw.rect(screen, 'black', outline_rect, 1)
 
