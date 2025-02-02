@@ -262,12 +262,15 @@ class Player(pygame.sprite.Sprite):
 
 
 class Bullet(pygame.sprite.Sprite):
-    def __init__(self, MC_coords, mouse_coords):
-        super().__init__(MCbullet_group, all_sprites)
+    def __init__(self, MC_coords, mouse_coords, enemy=False):
+        if not enemy:
+            super().__init__(MCbullet_group, all_sprites)
+        else:
+            super().__init__(enemies_bullet_group, all_sprites)
         self.image = tile_images['MC_bullet']
         self.image = make_img(self.image, width, height, MCbullet_width, MCbullet_height)
         self.rect = self.image.get_rect().move(
-             MC_coords[0] + MCbullet_width // 5.5, MC_coords[1] + MCbullet_height // 2)
+            MC_coords[0] + MCbullet_width // 5.5, MC_coords[1] + MCbullet_height // 2)
 
         self.speed = bullet_def_v
         vx = (mouse_coords[0] - MCbullet_width // 2) - MC_coords[0]
@@ -310,7 +313,6 @@ class Villager(pygame.sprite.Sprite):
         self.image = make_img(self.frames[self.save_dir][0], width, height, MC_width, MC_height)
         self.rect = self.image.get_rect().move(
             pos_x + 15, pos_y + 5)
-        self.directory = 'f'
         self.prev_direction = ''
 
     def update(self, x2, y2, norm_v=3 / (2 ** 0.5)):
@@ -335,9 +337,9 @@ class Villager(pygame.sprite.Sprite):
         if perp_y < 0:
             f = 'f'
         if perp_x > 0:
-            r = 'r'
-        if perp_x < 0:
             l = 'l'
+        if perp_x < 0:
+            r = 'r'
         cur_direction = l + r + f + d
 
         self.time_counter += 1
@@ -374,13 +376,22 @@ class Villager(pygame.sprite.Sprite):
 class Musketeer(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y):
         super().__init__(enemy_group, all_sprites)
-        self.images = enemy_images
-        self.image = make_img(self.images['musketeer'], width, height, MC_width, MC_height)
+        self.frames_amount = len(musketeer_media['moving'])
+        self.frames = {'l': musketeer_media['moving'],
+                       'r': list(map(lambda pic:
+                                     pygame.transform.flip(pic, True, False),
+                                     musketeer_media['moving']))}
+        self.cur_frame = 0
+        self.frame_delay = 3
+        self.time_counter = 0
+        self.save_dir = 'r'
+        self.image = make_img(self.frames[self.save_dir][0], width, height, MC_width, MC_height)
         self.rect = self.image.get_rect().move(
             pos_x + 15, pos_y + 5)
-        self.directory = 'f'
+        self.prev_direction = ''
 
     def update(self, x2, y2, norm_v=3 / (2 ** 0.5)):
+        print(22222)
         x1, y1 = self.rect.x, self.rect.y
 
         perp_x = x2 - x1
@@ -388,27 +399,51 @@ class Musketeer(pygame.sprite.Sprite):
 
         dist = (perp_x ** 2 + perp_y ** 2) ** 0.5
         if dist < 1000:
-            if perp_x == 0:
-                direction = 'f' if perp_y < 0 else 'd'
-            elif perp_x > 0:
-                if perp_y == 0:
-                    direction = 'r'
-                else:
-                    direction = 'dr' if perp_y > 0 else 'fr'
-            else:
-                if perp_y == 0:
-                    direction = 'l'
-                else:
-                    direction = 'dl' if perp_y > 0 else 'fl'
-            Bullet((x1, y1), direction, False)
+            Bullet((x1, y1), (x2, y2), True)
         if dist != 0:
             vx = (perp_x / dist) * norm_v
             vy = (perp_y / dist) * norm_v
             if pygame.sprite.spritecollideany(self, MCbullet_group):
+                print(pygame.sprite.spritecollideany(self, MCbullet_group))
                 pygame.sprite.spritecollide(self, MCbullet_group, dokill=True)
                 self.kill()
             else:
                 self.rect = self.rect.move(vx, vy)
+
+        l, r, f, d = '', '', '', ''
+        if perp_y > 0:
+            d = 'd'
+        if perp_y < 0:
+            f = 'f'
+        if perp_x > 0:
+            l = 'l'
+        if perp_x < 0:
+            r = 'r'
+        cur_direction = l + r + f + d
+
+        self.time_counter += 1
+        if self.time_counter >= self.frame_delay:
+            self.cur_frame = (self.cur_frame + 1) % self.frames_amount
+            if cur_direction not in 'fd ':
+                self.image = make_img(self.frames[cur_direction[0]][self.cur_frame], width, height, MC_width, MC_height)
+            else:
+                if cur_direction in 'fd':
+                    if self.prev_direction not in 'fd ':  # не пауза фд == норм двиэ
+                        self.save_dir = self.prev_direction
+                        self.image = make_img(self.frames[self.save_dir[0]][self.cur_frame], width, height, MC_width,
+                                              MC_height)
+                    elif self.prev_direction not in ' ':  # == fd
+                        self.image = make_img(self.frames[self.save_dir[0]][self.cur_frame], width, height, MC_width,
+                                              MC_height)
+                    else:
+                        self.cur_frame = 0
+                        self.image = make_img(self.frames[self.save_dir[0]][self.cur_frame], width, height, MC_width,
+                                              MC_height)
+                else:
+                    self.image = make_img(self.frames[self.save_dir[0]][0], width, height, MC_width, MC_height)
+            self.prev_direction = cur_direction
+            self.time_counter = 0
+        print('3333333')
 
     def resize(self, SW, SH):
         global MCbullet_width, MCbullet_height, width, height
@@ -438,7 +473,7 @@ def level1(screen):
     camera = Camera()
     generate_enemies(3)
     n_enemies = 0
-    Musketeer(width, 0)
+    Musketeer(500, 500)
 
     while True:
         screen.fill('black')
@@ -534,7 +569,9 @@ background = pygame.transform.scale(load_image(r'game\background1.jpg'), (width,
 
 player_media = {'moving': convert_gif(r'game\MC_moving\MCwalk.gif')}
 villager_media = {'moving': [load_image(f'/game/enemy/villager/sprite_{i}.png')for i in range(4)]}
-enemy_images = {'stay': load_image(r'game\enemy\EK.png'), 'musketeer': load_image(r'game/enemy/Musketeer/musketeer0.png')}
+musketeer_media = {'moving': [load_image(f'/game/enemy/musketeer/musketeer{i}.png')for i in range(4)]}
+print(musketeer_media)
+enemy_images = {'stay': load_image(r'game\enemy\EK.png')}
 
 angles_dict = {'f': ...}
 
