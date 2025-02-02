@@ -298,11 +298,20 @@ class Bullet(pygame.sprite.Sprite):
 class Villager(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y):
         super().__init__(enemy_group, all_sprites)
-        self.images = enemy_images
-        self.image = make_img(self.images['stay'], width, height, MC_width, MC_height)
+        self.frames_amount = len(villager_media['moving'])
+        self.frames = {'l': villager_media['moving'],
+                       'r': list(map(lambda pic:
+                                     pygame.transform.flip(pic, True, False),
+                                     villager_media['moving']))}
+        self.cur_frame = 0
+        self.frame_delay = 3
+        self.time_counter = 0
+        self.save_dir = 'r'
+        self.image = make_img(self.frames[self.save_dir][0], width, height, MC_width, MC_height)
         self.rect = self.image.get_rect().move(
             pos_x + 15, pos_y + 5)
         self.directory = 'f'
+        self.prev_direction = ''
 
     def update(self, x2, y2, norm_v=3 / (2 ** 0.5)):
         x1, y1 = self.rect.x, self.rect.y
@@ -490,6 +499,7 @@ tile_images = {
 background = pygame.transform.scale(load_image(r'game\background1.jpg'), (width, height))
 
 player_media = {'moving': convert_gif(r'game\MC_moving\MCwalk.gif')}
+villager_media = {'moving': [load_image(f'/game/enemy/villager/sprite_{i}.png')for i in range(4)]}
 enemy_images = {'stay': load_image(r'game\enemy\EK.png')}
 
 angles_dict = {'f': ...}
