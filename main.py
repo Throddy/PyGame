@@ -759,6 +759,9 @@ def update_level(screen, enemy):
                 terminate()
             if event.type == pygame.KEYDOWN and event.key == pygame.K_q:
                 return
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_m:
+                for sprite in enemy_group:
+                    sprite.kill()
             if event.type == pygame.VIDEORESIZE:
                 new_width = max(event.w, min_width)
                 new_height = max(event.h, min_height)
