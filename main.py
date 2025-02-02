@@ -403,6 +403,8 @@ class Musketeer(pygame.sprite.Sprite):
         self.cur_frame = 0
         self.frame_delay = 15
         self.time_counter = 0
+        self.shot_counter = 0
+        self.shot_freq = 60
         self.save_dir = 'r'
         self.image = make_img(self.frames[self.save_dir][0], width, height, MC_width, MC_height)
         self.rect = self.image.get_rect().move(
@@ -416,7 +418,9 @@ class Musketeer(pygame.sprite.Sprite):
         perp_y = y2 - y1
 
         dist = (perp_x ** 2 + perp_y ** 2) ** 0.5
-        if dist < 1000:
+        self.shot_counter += 1
+        if dist < 1000 and self.shot_counter >= self.shot_freq:
+            self.shot_counter = 0
             Bullet((x1, y1), (x2, y2), True)
         if dist != 0:
             vx = (perp_x / dist) * norm_v
