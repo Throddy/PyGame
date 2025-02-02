@@ -403,7 +403,6 @@ class Musketeer(pygame.sprite.Sprite):
         self.prev_direction = ''
 
     def update(self, x2, y2, norm_v=3 / (2 ** 0.5)):
-        print(22222)
         x1, y1 = self.rect.x, self.rect.y
 
         perp_x = x2 - x1
@@ -416,7 +415,6 @@ class Musketeer(pygame.sprite.Sprite):
             vx = (perp_x / dist) * norm_v
             vy = (perp_y / dist) * norm_v
             if pygame.sprite.spritecollideany(self, MCbullet_group):
-                print(pygame.sprite.spritecollideany(self, MCbullet_group))
                 pygame.sprite.spritecollide(self, MCbullet_group, dokill=True)
                 self.kill()
             else:
@@ -455,7 +453,6 @@ class Musketeer(pygame.sprite.Sprite):
                     self.image = make_img(self.frames[self.save_dir[0]][0], width, height, MC_width, MC_height)
             self.prev_direction = cur_direction
             self.time_counter = 0
-        print('3333333')
 
     def resize(self, SW, SH):
         global MCbullet_width, MCbullet_height, width, height
@@ -622,7 +619,6 @@ background = pygame.transform.scale(load_image(r'game\background1.jpg'), (width,
 player_media = {'moving': convert_gif(r'game\MC_moving\MCwalk.gif')}
 villager_media = {'moving': [load_image(f'/game/enemy/villager/sprite_{i}.png')for i in range(4)]}
 musketeer_media = {'moving': [load_image(f'/game/enemy/musketeer/musketeer{i}.png')for i in range(4)]}
-print(musketeer_media)
 enemy_images = {'stay': load_image(r'game\enemy\EK.png')}
 
 angles_dict = {'f': ...}
