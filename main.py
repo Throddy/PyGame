@@ -154,7 +154,7 @@ def comic():
 
     while True:
         screen.fill(pygame.Color('black'))
-        fon = pygame.transform.scale(load_image('start_screen/Presentation1.jpg'), (width, height))
+        fon = pygame.transform.scale(load_image('start_screen/comic.png'), (width, height))
         screen.blit(fon, (0, 0))
 
         for event in pygame.event.get():
