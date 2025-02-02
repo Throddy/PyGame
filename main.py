@@ -434,13 +434,18 @@ class Musketeer(pygame.sprite.Sprite):
         self.shot_freq = musketeer_firing_delay
         self.load_animation(pos_x, pos_y, musketeer_media)
         self.hp = Musk_hp
+        self.hit = False
 
     def load_animation(self, pos_x, pos_y, media):
         self.frames_amount = len(media['moving'])
         self.frames = {'l': media['moving'],
+                       'lh': media['moving_h'],
                        'r': list(map(lambda pic:
                                      pygame.transform.flip(pic, True, False),
-                                     media['moving']))}
+                                     media['moving'])),
+                       'rh': list(map(lambda pic:
+                                      pygame.transform.flip(pic, True, False),
+                                      media['moving_h']))}
         self.cur_frame = 0
         self.frame_delay = 15
         self.time_counter = 0
@@ -452,6 +457,13 @@ class Musketeer(pygame.sprite.Sprite):
         self.prev_direction = ''
 
     def update(self, x2, y2, norm_v=3 / (2 ** 0.5)):
+        if self.hp <= 0:
+            self.kill()
+
+        if pygame.sprite.spritecollide(self, MCbullet_group, dokill=True):
+            self.hit = True
+            self.hp -= 10
+
         x1, y1 = self.rect.x, self.rect.y
 
         perp_x = x2 - x1
@@ -487,24 +499,27 @@ class Musketeer(pygame.sprite.Sprite):
         if self.time_counter >= self.frame_delay:
             self.cur_frame = (self.cur_frame + 1) % self.frames_amount
             if cur_direction not in 'fd ':
-                self.image = make_img(self.frames[cur_direction[0]][self.cur_frame], width, height, MC_width, MC_height)
+                self.image = make_img(self.frames[cur_direction[0] + ('h' if self.hit else '')][self.cur_frame], width,
+                                      height, MC_width, MC_height)
             else:
                 if cur_direction in 'fd':
                     if self.prev_direction not in 'fd ':  # не пауза фд == норм двиэ
                         self.save_dir = self.prev_direction
-                        self.image = make_img(self.frames[self.save_dir[0]][self.cur_frame], width, height, MC_width,
-                                              MC_height)
+                        self.image = make_img(self.frames[self.save_dir[0] + ('h' if self.hit else '')][self.cur_frame],
+                                              width, height, MC_width, MC_height)
                     elif self.prev_direction not in ' ':  # == fd
-                        self.image = make_img(self.frames[self.save_dir[0]][self.cur_frame], width, height, MC_width,
-                                              MC_height)
+                        self.image = make_img(self.frames[self.save_dir[0] + ('h' if self.hit else '')][self.cur_frame],
+                                              width, height, MC_width, MC_height)
                     else:
                         self.cur_frame = 0
-                        self.image = make_img(self.frames[self.save_dir[0]][self.cur_frame], width, height, MC_width,
-                                              MC_height)
+                        self.image = make_img(self.frames[self.save_dir[0] + ('h' if self.hit else '')][self.cur_frame],
+                                              width, height, MC_width, MC_height)
                 else:
-                    self.image = make_img(self.frames[self.save_dir[0]][0], width, height, MC_width, MC_height)
+                    self.image = make_img(self.frames[self.save_dir[0] + ('h' if self.hit else '')][0], width, height,
+                                          MC_width, MC_height)
             self.prev_direction = cur_direction
             self.time_counter = 0
+            self.hit = False
 
     def shot(self, x2, y2, dist):
         self.shot_counter += 1
@@ -714,8 +729,10 @@ player_media = {'moving': [load_image(f'/game/horse/horse_{i}.png') for i in ran
                 'moving_h': [load_image(f'/game/horse_hit/horse_hit_{i}.png') for i in range(6)]}
 villager_media = {'moving': [load_image(f'/game/enemy/villager/sprite_{i}.png') for i in range(4)],
                   'moving_h': [load_image(f'/game/enemy/villager/villager_hit_{i}.png') for i in range(4)]}
-musketeer_media = {'moving': [load_image(f'/game/enemy/musketeer/musketeer{i}.png') for i in range(4)]}
-magician_media = {'moving': [load_image(f'/game/enemy/magician/magician_{i}.png') for i in range(2)]}
+musketeer_media = {'moving': [load_image(f'/game/enemy/musketeer/musketeer{i}.png') for i in range(4)],
+                   'moving_h': [load_image(f'/game/enemy/musketeer/musketeer_hit_{i}.png') for i in range(4)]}
+magician_media = {'moving': [load_image(f'/game/enemy/magician/magician_{i}.png') for i in range(2)],
+                  'moving_h': [load_image(f'/game/enemy/magician/magician_hit_{i}.png') for i in range(2)]}
 enemy_images = {'stay': load_image(r'game/enemy/EK.png')}
 
 angles_dict = {'f': ...}
