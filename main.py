@@ -734,8 +734,8 @@ def wave3(screen):
     MainCharacter.rect.x, MainCharacter.rect.y = width // 2, height // 2
     pygame.mouse.set_visible(True)
 
-    tile_images['tree'] = load_image(r'game/tree.png')
-    background = pygame.transform.scale(load_image(r'game/background1.jpg'), (width, height))
+    tile_images['tree'] = load_image(r'game/el.png')
+    background = pygame.transform.scale(load_image(r'game/background_mag-1.png'), (width, height))
 
     update_level(screen, Magician)
 
