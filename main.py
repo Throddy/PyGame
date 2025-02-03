@@ -9,7 +9,7 @@ pygame.mixer.music.load('data/game/bgm.mp3')
 pygame.mixer.music.play(-1)
 pygame.mixer.music.set_volume(0.1)
 
-pygame.display.set_caption('Walking')
+pygame.display.set_caption('The Horsehead')
 size = width, height = v_width, v_height = 1400, 800
 min_width, min_height = 1200, 700
 screen = pygame.display.set_mode(size, pygame.RESIZABLE, pygame.FULLSCREEN)
