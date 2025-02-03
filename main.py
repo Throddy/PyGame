@@ -5,10 +5,6 @@ from math import atan2, hypot, degrees
 
 pygame.init()
 
-pygame.mixer.music.load('data/game/bgm.mp3')
-pygame.mixer.music.play(-1)
-pygame.mixer.music.set_volume(0.05)
-
 gun_snd = pygame.mixer.Sound('data/game/sounds/gun.mp3')
 gun_snd.set_volume(0.1)
 musket_snd = pygame.mixer.Sound('data/game/sounds/musket.mp3')
@@ -120,6 +116,9 @@ def terminate():
 
 def start_screen():
     global width, height, screen, v_width, v_height
+    pygame.mixer.music.load('data/game/music/main_menu.mp3')
+    pygame.mixer.music.play(-1)
+    pygame.mixer.music.set_volume(0.05)
     cursor = Cursor()
     all_sprites.add(cursor)
     cursor_group.add(cursor)
@@ -218,6 +217,9 @@ def comic():
 
 def bad_end():
     global cur_wave, screen, width, height, v_width, v_height
+    pygame.mixer.music.load('data/game/music/bad_end.mp3')
+    pygame.mixer.music.play(-1)
+    pygame.mixer.music.set_volume(0.05)
     button_group.empty()
     cursor_group.empty()
     cursor = Cursor()
@@ -268,6 +270,9 @@ def bad_end():
 
 def final_screen():
     global cur_wave, screen, width, height, v_width, v_height
+    pygame.mixer.music.load('data/game/music/happy_end.mp3')
+    pygame.mixer.music.play(-1)
+    pygame.mixer.music.set_volume(0.05)
     button_group.empty()
     cursor_group.empty()
     cursor = Cursor()
@@ -732,6 +737,9 @@ class Camera:
 
 def wave1():
     global background, tile_images, v_height, v_width
+    pygame.mixer.music.load('data/game/music/vil_bgm.mp3')
+    pygame.mixer.music.play(-1)
+    pygame.mixer.music.set_volume(0.05)
     MainCharacter.rect.x, MainCharacter.rect.y = v_width // 2, v_height // 2
     pygame.mouse.set_visible(True)
 
@@ -743,6 +751,9 @@ def wave1():
 
 def wave2():
     global v_width, v_height, background, tile_images
+    pygame.mixer.music.load('data/game/music/musket_bgm.mp3')
+    pygame.mixer.music.play(-1)
+    pygame.mixer.music.set_volume(0.05)
     MainCharacter.rect.x, MainCharacter.rect.y = v_width // 2, v_height // 2
     pygame.mouse.set_visible(True)
 
@@ -754,6 +765,9 @@ def wave2():
 
 def wave3():
     global v_width, v_height, background, tile_images
+    pygame.mixer.music.load('data/game/music/mag_bgm.mp3')
+    pygame.mixer.music.play(-1)
+    pygame.mixer.music.set_volume(0.05)
     MainCharacter.rect.x, MainCharacter.rect.y = v_width // 2, v_height // 2
     pygame.mouse.set_visible(True)
 
