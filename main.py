@@ -707,7 +707,7 @@ def wave2():
     pygame.mouse.set_visible(True)
 
     tile_images['tree'] = load_image(r'game/torch-Photoroom.png')
-    background = pygame.transform.scale(load_image(r'game/brick-1.png'), (width, height))
+    background = pygame.transform.scale(load_image(r'game/brick-1.png'), (v_width, v_height))
 
     update_level(Musketeer)
 
@@ -718,7 +718,7 @@ def wave3():
     pygame.mouse.set_visible(True)
 
     tile_images['tree'] = load_image(r'game/el.png')
-    background = pygame.transform.scale(load_image(r'game/background_mag-1.png'), (width, height))
+    background = pygame.transform.scale(load_image(r'game/background_mag-1.png'), (v_width, v_height))
 
     update_level(Magician)
 
