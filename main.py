@@ -7,7 +7,16 @@ pygame.init()
 
 pygame.mixer.music.load('data/game/bgm.mp3')
 pygame.mixer.music.play(-1)
-pygame.mixer.music.set_volume(0.1)
+pygame.mixer.music.set_volume(0.05)
+
+gun_snd = pygame.mixer.Sound('data/game/sounds/gun.mp3')
+gun_snd.set_volume(0.1)
+musket_snd = pygame.mixer.Sound('data/game/sounds/musket.mp3')
+musket_snd.set_volume(0.03)
+ouch_snd = pygame.mixer.Sound('data/game/sounds/ouch.wav')
+ouch_snd.set_volume(0.3)
+spell_snd = pygame.mixer.Sound('data/game/sounds/spell.wav')
+spell_snd.set_volume(0.2)
 
 pygame.display.set_caption('The Horsehead')
 size = width, height = v_width, v_height = 1400, 800
@@ -353,12 +362,15 @@ class Player(pygame.sprite.Sprite):
             self.kill()
         if pygame.sprite.spritecollide(self, musketeer_bullet_group, dokill=True):
             self.hit = True
+            ouch_snd.play()
             self.hp -= Musk_damage
         if pygame.sprite.spritecollide(self, magician_bullet_group, dokill=True):
             self.hit = True
+            ouch_snd.play()
             self.hp -= Mag_damage
         if pygame.sprite.spritecollideany(self, enemy_group) and self.time >= v_damage_delay:
             self.hit = True
+            ouch_snd.play()
             self.hp -= Vil_damage
             self.time = 0
 
@@ -650,6 +662,7 @@ class Musketeer(pygame.sprite.Sprite):
         if dist < 1000 and self.shot_counter >= self.shot_freq:
             self.shot_counter = 0
             Bullet((x1, y1), (x2, y2), 'Musketeer')
+            musket_snd.play()
 
 
 class Magician(Musketeer):
@@ -664,6 +677,7 @@ class Magician(Musketeer):
         if dist < 1000 and self.shot_counter >= self.shot_freq:
             self.shot_counter = 0
             Bullet((x1, y1), (x2, y2), 'Magician')
+            spell_snd.play()
 
 
 class Button(pygame.sprite.Sprite):
@@ -798,6 +812,7 @@ def update_level(enemy):
                 screen = pygame.display.set_mode((width, height), pygame.RESIZABLE)
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
+                    gun_snd.play()
                     Bullet((MainCharacter.rect.x, MainCharacter.rect.y), event.pos)
 
         camera.update(MainCharacter)
