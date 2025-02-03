@@ -2,7 +2,6 @@ import pygame, os, sys, csv
 from fractions import Fraction
 from random import randint
 from random import choice as ch
-from PIL import Image
 from math import atan2, hypot, degrees
 
 pygame.init()
@@ -316,6 +315,7 @@ class Player(pygame.sprite.Sprite):
         self.hp = MC_hp
         self.hit = False
         self.time = 0
+        self.time_for_vil = 0
 
     def update(self, keys, vx=0, vy=0):
         global bad_end_flag
@@ -334,11 +334,11 @@ class Player(pygame.sprite.Sprite):
             self.hit = True
             ouch_snd.play()
             self.hp -= Mag_damage
-        if pygame.sprite.spritecollideany(self, enemy_group) and self.time >= v_damage_delay:
+        if pygame.sprite.spritecollideany(self, enemy_group) and self.time_for_vil >= v_damage_delay:
             self.hit = True
             ouch_snd.play()
             self.hp -= Vil_damage
-            self.time = 0
+            self.time_for_vil = 0
 
         l, r, f, d = '', '', '', ''
         if not keys[pygame.K_SPACE]:
@@ -403,6 +403,7 @@ class Player(pygame.sprite.Sprite):
         else:
             self.rect.x, self.rect.y = v_width // 2, v_height // 2
         self.time += Fraction(1, FPS)
+        self.time_for_vil += 1
 
 
 class Bullet(pygame.sprite.Sprite):
@@ -945,6 +946,7 @@ def start_stats(file_name):
         for header, start_vals in zip(headers, [0] * len(headers)):
             start_data[header] = start_vals
         writer.writerow(start_data)
+
 
 def review_stats(file_name, enemy=None, killed=False, time_ticked=False, shoted=False):
     global headers
