@@ -48,7 +48,8 @@ def terminate():
 
 
 def start_screen():
-    global width, height, screen, v_width, v_height, non_stop_mode_flag, start_mode_flaga
+    global width, height, screen, v_width, v_height, non_stop_mode_flag, start_mode_flag, MainCharacter
+    start_mode_flag, non_stop_mode_flag = False, False
     pygame.mixer.music.load('data/game/music/main_menu.mp3')
     pygame.mixer.music.play(-1)
     pygame.mixer.music.set_volume(0.05)
@@ -85,14 +86,15 @@ def start_screen():
                         cursor.kill()
                         button_group.empty()
                         start_mode_flag = True
-                        return
+                        return comic()
                     if pygame.sprite.spritecollideany(exit_button, cursor_group):
                         terminate()
                     if pygame.sprite.spritecollideany(non_stop_button, cursor_group):
                         cursor.kill()
                         button_group.empty()
                         non_stop_mode_flag = True
-                        return
+                        MainCharacter = Player(v_width // 2, v_height // 2)
+                        return non_stopMODE()
             if event.type == pygame.VIDEORESIZE:
                 width = max(event.w, min_width)
                 height = max(event.h, min_height)
@@ -113,7 +115,7 @@ def start_screen():
 
 
 def comic():
-    global width, height, screen, v_width, v_height
+    global width, height, screen, v_width, v_height, MainCharacter
     cursor = Cursor()
     all_sprites.add(cursor)
     cursor_group.add(cursor)
@@ -135,7 +137,8 @@ def comic():
                 if event.button == 1:
                     if pygame.sprite.spritecollideany(start_button, cursor_group):
                         cursor.kill()
-                        return
+                        MainCharacter = Player(v_width // 2, v_height // 2)
+                        return wave1()
             if event.type == pygame.MOUSEMOTION:
                 cords = event.pos
                 flag = pygame.mouse.get_focused()
@@ -201,7 +204,7 @@ def bad_end():
                         button_group.empty()
                         cur_wave = 0
                         start_button, non_stop_mode_flag = False, False
-                        return
+                        return start_screen()
                     if pygame.sprite.spritecollideany(exit_button, cursor_group):
                         terminate()
             if event.type == pygame.VIDEORESIZE:
@@ -254,7 +257,7 @@ def final_screen():
                         cursor.kill()
                         button_group.empty()
                         cur_wave = 0
-                        return
+                        return start_screen()
                     if pygame.sprite.spritecollideany(exit_button, cursor_group):
                         terminate()
             if event.type == pygame.VIDEORESIZE:
@@ -788,7 +791,7 @@ def non_stopMODE():
         trees_group.draw(virtual_surface)
         player_group.update(keys)
         if bad_end_flag:
-            return
+            return bad_end()
         player_group.draw(virtual_surface)
         MCbullet_group.update()
         MCbullet_group.draw(virtual_surface)
@@ -839,7 +842,7 @@ def update_level(enemy):
                         tree.kill()
             if MainCharacter.rect.x > v_width:
                 cur_wave += 1
-                if cur_wave <= 2:
+                if cur_wave <= 3:
                     waves[cur_wave]()
                 return
 
@@ -1024,7 +1027,7 @@ musketeer_firing_delay = 300
 
 BAR_LENGTH, BAR_HEIGHT = UNIT_width, 10
 
-waves = [wave1, wave2, wave3]
+waves = [wave1, wave2, wave3, final_screen]
 cur_wave = 0
 
 stat_file_name = 'stat.csv'
@@ -1042,21 +1045,4 @@ exit_flag = False
 
 
 if __name__ == '__main__':
-    while True:
-        start_screen()
-        if start_mode_flag:
-            comic()
-            MainCharacter = Player(v_width // 2, v_height // 2)
-            wave1()
-            if bad_end_flag:
-                bad_end()
-                continue
-            final_screen()
-        elif non_stop_mode_flag:
-            MainCharacter = Player(v_width // 2, v_height // 2)
-            non_stopMODE()
-            if bad_end_flag:
-                bad_end()
-                continue
-            final_screen()
-        terminate()
+    start_screen()
