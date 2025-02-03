@@ -723,8 +723,8 @@ def wave2(screen):
     MainCharacter.rect.x, MainCharacter.rect.y = width // 2, height // 2
     pygame.mouse.set_visible(True)
 
-    tile_images['tree'] = load_image(r'game/water.png')
-    background = pygame.transform.scale(load_image(r'game/road.png'), (width, height))
+    tile_images['tree'] = load_image(r'game/torch-Photoroom.png')
+    background = pygame.transform.scale(load_image(r'game/brick-1.png'), (width, height))
 
     update_level(screen, Musketeer)
 
