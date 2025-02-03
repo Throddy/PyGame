@@ -48,7 +48,7 @@ def terminate():
 
 
 def start_screen():
-    global width, height, screen, v_width, v_height
+    global width, height, screen, v_width, v_height, non_stop_mode_flag, start_mode_flaga
     pygame.mixer.music.load('data/game/music/main_menu.mp3')
     pygame.mixer.music.play(-1)
     pygame.mixer.music.set_volume(0.05)
@@ -168,13 +168,13 @@ def bad_end():
     pygame.mouse.set_visible(False)
     k_w, k_h = (width / v_width), (height / v_height)
     start_button = Button(300 * k_w, 600 * k_h, 300, 600, (350 * k_w, 100 * k_h), (350, 100))
-    if non_stop_mode_flag:
-        results = stat_results(stat_file_name)
-    start_button = Button(300, 600, (350, 100))
     start_button.set_image('start_screen/startbutton/sprite_0.png')
 
     exit_button = Button(700 * k_w, 600 * k_h, 700, 600, (350 * k_w, 100 * k_h), (350, 100))
     exit_button.set_image('start_screen/exitbutton/exitbutton_0.png')
+
+    if non_stop_mode_flag:
+        results = stat_results(stat_file_name)
 
     while True:
         screen.fill(pygame.Color('black'))
@@ -186,7 +186,7 @@ def bad_end():
             text_y = 10
             for title, value in results:
                 font = pygame.font.Font(None, 30)
-                text = font.render(f'{title} ---> {value}', True, (100, 255, 100))
+                text = font.render(f'{title} ---> {value}', True, 'pink')
                 text_h = text.get_height()
                 screen.blit(text, (text_x, text_y))
                 text_y += text_h * 1.2
