@@ -111,6 +111,7 @@ def terminate():
 
 def start_screen():
     global width, height, screen, virtual_surface, v_width, v_height
+    screen = pygame.display.set_mode((v_width, v_height))
     cursor = Cursor()
     all_sprites.add(cursor)
     cursor_group.add(cursor)
@@ -130,9 +131,9 @@ def start_screen():
     non_stop_button.set_image('start_screen/nonstopbutton/nonstop_0.png')
 
     while True:
-        virtual_surface.fill(pygame.Color('black'))
+        screen.fill(pygame.Color('black'))
         fon = pygame.transform.scale(load_image('/start_screen/start_background.png'), (v_width, v_height))
-        virtual_surface.blit(fon, (0, 0))
+        screen.blit(fon, (0, 0))
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -145,27 +146,22 @@ def start_screen():
                         return
                     if pygame.sprite.spritecollideany(exit_button, cursor_group):
                         terminate()
-            if event.type == pygame.VIDEORESIZE:
-                width = max(event.w, min_width)
-                height = max(event.h, min_height)
-                screen = pygame.display.set_mode((width, height), pygame.RESIZABLE)
 
             if event.type == pygame.MOUSEMOTION:
                 cords = event.pos
                 flag = pygame.mouse.get_focused()
                 cursor.rect.x, cursor.rect.y = cords
         button_group.update()
-        button_group.draw(virtual_surface)
+        button_group.draw(screen)
         if flag:
-            cursor_group.draw(virtual_surface)
-        scaled_surface = pygame.transform.scale(virtual_surface, (width, height))
-        screen.blit(scaled_surface, (0, 0))
+            cursor_group.draw(screen)
         pygame.display.flip()
         clock.tick(FPS)
 
 
 def comic():
-    global width, height, screen, virtual_surface, v_width, v_height
+    global width, height, screen, v_width, v_height
+    screen = pygame.display.set_mode((v_width, v_height))
     cursor = Cursor()
     all_sprites.add(cursor)
     cursor_group.add(cursor)
@@ -175,9 +171,9 @@ def comic():
     start_button.set_image('start_screen/startbutton/sprite_0.png')
 
     while True:
-        virtual_surface.fill(pygame.Color('black'))
+        screen.fill(pygame.Color('black'))
         fon = pygame.transform.scale(load_image('start_screen/comic.png'), (v_width, v_height))
-        virtual_surface.blit(fon, (0, 0))
+        screen.blit(fon, (0, 0))
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -187,26 +183,21 @@ def comic():
                     if pygame.sprite.spritecollideany(start_button, cursor_group):
                         cursor.kill()
                         return
-            if event.type == pygame.VIDEORESIZE:
-                width = max(event.w, min_width)
-                height = max(event.h, min_height)
-                screen = pygame.display.set_mode((width, height), pygame.RESIZABLE)
             if event.type == pygame.MOUSEMOTION:
                 cords = event.pos
                 flag = pygame.mouse.get_focused()
                 cursor.rect.x, cursor.rect.y = cords
         button_group.update()
-        button_group.draw(virtual_surface)
+        button_group.draw(screen)
         if flag:
-            cursor_group.draw(virtual_surface)
-        scaled_surface = pygame.transform.scale(virtual_surface, (width, height))
-        screen.blit(scaled_surface, (0, 0))
+            cursor_group.draw(screen)
         pygame.display.flip()
         clock.tick(FPS)
 
 
 def bad_end():
-    global cur_wave, screen, virtual_surface, width, height, v_width, v_height
+    global cur_wave, screen, width, height, v_width, v_height
+    screen = pygame.display.set_mode((v_width, v_height))
     button_group.empty()
     cursor_group.empty()
     cursor = Cursor()
@@ -221,9 +212,9 @@ def bad_end():
     exit_button.set_image('start_screen/exitbutton/exitbutton_0.png')
 
     while True:
-        virtual_surface.fill(pygame.Color('black'))
+        screen.fill(pygame.Color('black'))
         fon = pygame.transform.scale(load_image('start_screen/game_over.jpeg'), (v_width, v_height))
-        virtual_surface.blit(fon, (0, 0))
+        screen.blit(fon, (0, 0))
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
@@ -236,32 +227,27 @@ def bad_end():
                         return
                     if pygame.sprite.spritecollideany(exit_button, cursor_group):
                         terminate()
-            if event.type == pygame.VIDEORESIZE:
-                width = max(event.w, min_width)
-                height = max(event.h, min_height)
-                screen = pygame.display.set_mode((width, height), pygame.RESIZABLE)
             if event.type == pygame.MOUSEMOTION:
                 cords = event.pos
                 flag = pygame.mouse.get_focused()
                 cursor.rect.x, cursor.rect.y = cords
         button_group.update()
-        button_group.draw(virtual_surface)
+        button_group.draw(screen)
         if flag:
-            cursor_group.draw(virtual_surface)
-        scaled_surface = pygame.transform.scale(virtual_surface, (width, height))
-        screen.blit(scaled_surface, (0, 0))
+            cursor_group.draw(screen)
         pygame.display.flip()
         clock.tick(FPS)
 
 
 def final_screen():
-    global screen, virtual_surface, width, height, v_width, v_height
+    global screen, width, height, v_width, v_height
+    screen = pygame.display.set_mode((v_width, v_height))
     outro_text = ["Окочание",
                   "Спасибо за тестирование игры.",
                   "Покедава!"]
-    virtual_surface.fill('white')
+    screen.fill('white')
     fon = pygame.transform.scale(load_image('fon2.jpg'), (v_width, v_height))
-    virtual_surface.blit(fon, (0, 0))
+    screen.blit(fon, (0, 0))
     font = pygame.font.Font(None, 40)
     text_coord = 50
     for line in outro_text:
@@ -271,7 +257,7 @@ def final_screen():
         outro_rect.top = text_coord
         outro_rect.x = 30
         text_coord += outro_rect.height
-        virtual_surface.blit(string_rendered, outro_rect)
+        screen.blit(string_rendered, outro_rect)
 
     while True:
         for event in pygame.event.get():
@@ -280,12 +266,6 @@ def final_screen():
             elif event.type == pygame.KEYDOWN or \
                     event.type == pygame.MOUSEBUTTONDOWN:
                 return
-            if event.type == pygame.VIDEORESIZE:
-                width = max(event.w, min_width)
-                height = max(event.h, min_height)
-                screen = pygame.display.set_mode((width, height), pygame.RESIZABLE)
-        scaled_surface = pygame.transform.scale(virtual_surface, (width, height))
-        screen.blit(scaled_surface, (0, 0))
         pygame.display.flip()
         clock.tick(FPS)
 
@@ -431,8 +411,8 @@ class Bullet(pygame.sprite.Sprite):
             MC_coords[0] + MCbullet_width // 5.5, MC_coords[1] + MCbullet_height // 2)
 
         self.speed = bullet_def_v
-        vx = (mouse_coords[0] - MCbullet_width // 2) - MC_coords[0]
-        vy = (mouse_coords[1] - MCbullet_height // 2) - MC_coords[1]
+        vx = (mouse_coords[0] * (v_width / width) - MCbullet_width // 2) - MC_coords[0]
+        vy = (mouse_coords[1] * (v_height / height) - MCbullet_height // 2) - MC_coords[1]
         dist = hypot(vx, vy)
         self.vx = (vx / dist) * self.speed
         self.vy = (vy / dist) * self.speed
@@ -911,6 +891,7 @@ if __name__ == '__main__':
         start_screen()
         comic()
         MainCharacter = Player(v_width // 2, v_height // 2)
+        screen = pygame.display.set_mode(size, pygame.RESIZABLE, pygame.FULLSCREEN)
         wave1()
         if bad_end_flag:
             bad_end()
