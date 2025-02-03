@@ -258,37 +258,51 @@ def bad_end():
 
 
 def final_screen():
-    global screen, width, height, v_width, v_height
-    outro_text = ["Окочание",
-                  "Спасибо за тестирование игры.",
-                  "Покедава!"]
-    screen.fill('white')
-    fon = pygame.transform.scale(load_image('fon2.jpg'), (width, height))
-    screen.blit(fon, (0, 0))
-    font = pygame.font.Font(None, 40)
-    text_coord = 50
-    for line in outro_text:
-        string_rendered = font.render(line, 1, pygame.Color('black'))
-        outro_rect = string_rendered.get_rect()
-        text_coord += 30
-        outro_rect.top = text_coord
-        outro_rect.x = 30
-        text_coord += outro_rect.height
-        screen.blit(string_rendered, outro_rect)
+    global cur_wave, screen, width, height, v_width, v_height
+    button_group.empty()
+    cursor_group.empty()
+    cursor = Cursor()
+    all_sprites.add(cursor)
+    cursor_group.add(cursor)
+    flag = False
+    pygame.mouse.set_visible(False)
+    k_w, k_h = (width / v_width), (height / v_height)
+    start_button = Button(300 * k_w, 600 * k_h, 300, 600, (350 * k_w, 100 * k_h), (350, 100))
+    start_button.set_image('start_screen/startbutton/sprite_0.png')
+
+    exit_button = Button(700 * k_w, 600 * k_h, 700, 600, (350 * k_w, 100 * k_h), (350, 100))
+    exit_button.set_image('start_screen/exitbutton/exitbutton_0.png')
 
     while True:
+        screen.fill(pygame.Color('black'))
+        fon = pygame.transform.scale(load_image('game/final_screen.png'), (width, height))
+        screen.blit(fon, (0, 0))
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
-            elif event.type == pygame.KEYDOWN or \
-                    event.type == pygame.MOUSEBUTTONDOWN:
-                return
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    if pygame.sprite.spritecollideany(start_button, cursor_group):
+                        cursor.kill()
+                        button_group.empty()
+                        cur_wave = 0
+                        return
+                    if pygame.sprite.spritecollideany(exit_button, cursor_group):
+                        terminate()
             if event.type == pygame.VIDEORESIZE:
                 width = max(event.w, min_width)
                 height = max(event.h, min_height)
                 screen = pygame.display.set_mode((width, height), pygame.RESIZABLE)
                 for btn in button_group:
                     btn.resize()
+            if event.type == pygame.MOUSEMOTION:
+                cords = event.pos
+                flag = pygame.mouse.get_focused()
+                cursor.rect.x, cursor.rect.y = cords
+        button_group.update()
+        button_group.draw(screen)
+        if flag:
+            cursor_group.draw(screen)
         pygame.display.flip()
         clock.tick(FPS)
 
@@ -928,4 +942,3 @@ if __name__ == '__main__':
             bad_end()
             continue
         final_screen()
-        terminate()
