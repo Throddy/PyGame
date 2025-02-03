@@ -225,7 +225,7 @@ def bad_end():
 
     while True:
         screen.fill(pygame.Color('black'))
-        fon = pygame.transform.scale(load_image('start_screen/game_over.jpeg'), (width, height))
+        fon = pygame.transform.scale(load_image('start_screen/game_over2.png'), (width, height))
         screen.blit(fon, (0, 0))
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
