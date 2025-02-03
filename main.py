@@ -10,10 +10,13 @@ pygame.mixer.music.play(-1)
 pygame.mixer.music.set_volume(0.1)
 
 pygame.display.set_caption('Walking')
-size = width, height = 1400, 800
+size = width, height = v_width, v_height = 1400, 800
 min_width, min_height = 1200, 700
-# screen = pygame.display.set_mode(size, pygame.RESIZABLE, pygame.FULLSCREEN)
-screen = pygame.display.set_mode(size)
+screen = pygame.display.set_mode(size, pygame.RESIZABLE, pygame.FULLSCREEN)
+virtual_surface = pygame.Surface((width, height))
+
+
+# screen = pygame.display.set_mode(size)
 
 
 def load_image(name, colorkey=None):
@@ -107,6 +110,7 @@ def terminate():
 
 
 def start_screen():
+    global width, height, screen, virtual_surface, v_width, v_height
     cursor = Cursor()
     all_sprites.add(cursor)
     cursor_group.add(cursor)
@@ -126,9 +130,9 @@ def start_screen():
     non_stop_button.set_image('start_screen/nonstopbutton/nonstop_0.png')
 
     while True:
-        screen.fill(pygame.Color('black'))
-        fon = pygame.transform.scale(load_image('/start_screen/start_background.png'), (width, height))
-        screen.blit(fon, (0, 0))
+        virtual_surface.fill(pygame.Color('black'))
+        fon = pygame.transform.scale(load_image('/start_screen/start_background.png'), (v_width, v_height))
+        virtual_surface.blit(fon, (0, 0))
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -141,20 +145,27 @@ def start_screen():
                         return
                     if pygame.sprite.spritecollideany(exit_button, cursor_group):
                         terminate()
+            if event.type == pygame.VIDEORESIZE:
+                width = max(event.w, min_width)
+                height = max(event.h, min_height)
+                screen = pygame.display.set_mode((width, height), pygame.RESIZABLE)
 
             if event.type == pygame.MOUSEMOTION:
                 cords = event.pos
                 flag = pygame.mouse.get_focused()
                 cursor.rect.x, cursor.rect.y = cords
         button_group.update()
-        button_group.draw(screen)
+        button_group.draw(virtual_surface)
         if flag:
-            cursor_group.draw(screen)
+            cursor_group.draw(virtual_surface)
+        scaled_surface = pygame.transform.scale(virtual_surface, (width, height))
+        screen.blit(scaled_surface, (0, 0))
         pygame.display.flip()
         clock.tick(FPS)
 
 
 def comic():
+    global width, height, screen, virtual_surface, v_width, v_height
     cursor = Cursor()
     all_sprites.add(cursor)
     cursor_group.add(cursor)
@@ -164,9 +175,9 @@ def comic():
     start_button.set_image('start_screen/startbutton/sprite_0.png')
 
     while True:
-        screen.fill(pygame.Color('black'))
-        fon = pygame.transform.scale(load_image('start_screen/comic.png'), (width, height))
-        screen.blit(fon, (0, 0))
+        virtual_surface.fill(pygame.Color('black'))
+        fon = pygame.transform.scale(load_image('start_screen/comic.png'), (v_width, v_height))
+        virtual_surface.blit(fon, (0, 0))
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -176,21 +187,26 @@ def comic():
                     if pygame.sprite.spritecollideany(start_button, cursor_group):
                         cursor.kill()
                         return
-
+            if event.type == pygame.VIDEORESIZE:
+                width = max(event.w, min_width)
+                height = max(event.h, min_height)
+                screen = pygame.display.set_mode((width, height), pygame.RESIZABLE)
             if event.type == pygame.MOUSEMOTION:
                 cords = event.pos
                 flag = pygame.mouse.get_focused()
                 cursor.rect.x, cursor.rect.y = cords
         button_group.update()
-        button_group.draw(screen)
+        button_group.draw(virtual_surface)
         if flag:
-            cursor_group.draw(screen)
+            cursor_group.draw(virtual_surface)
+        scaled_surface = pygame.transform.scale(virtual_surface, (width, height))
+        screen.blit(scaled_surface, (0, 0))
         pygame.display.flip()
         clock.tick(FPS)
 
 
 def bad_end():
-    global cur_wave
+    global cur_wave, screen, virtual_surface, width, height, v_width, v_height
     button_group.empty()
     cursor_group.empty()
     cursor = Cursor()
@@ -205,9 +221,9 @@ def bad_end():
     exit_button.set_image('start_screen/exitbutton/exitbutton_0.png')
 
     while True:
-        screen.fill(pygame.Color('black'))
-        fon = pygame.transform.scale(load_image('start_screen/game_over.jpeg'), (width, height))
-        screen.blit(fon, (0, 0))
+        virtual_surface.fill(pygame.Color('black'))
+        fon = pygame.transform.scale(load_image('start_screen/game_over.jpeg'), (v_width, v_height))
+        virtual_surface.blit(fon, (0, 0))
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
@@ -220,26 +236,32 @@ def bad_end():
                         return
                     if pygame.sprite.spritecollideany(exit_button, cursor_group):
                         terminate()
-
+            if event.type == pygame.VIDEORESIZE:
+                width = max(event.w, min_width)
+                height = max(event.h, min_height)
+                screen = pygame.display.set_mode((width, height), pygame.RESIZABLE)
             if event.type == pygame.MOUSEMOTION:
                 cords = event.pos
                 flag = pygame.mouse.get_focused()
                 cursor.rect.x, cursor.rect.y = cords
         button_group.update()
-        button_group.draw(screen)
+        button_group.draw(virtual_surface)
         if flag:
-            cursor_group.draw(screen)
+            cursor_group.draw(virtual_surface)
+        scaled_surface = pygame.transform.scale(virtual_surface, (width, height))
+        screen.blit(scaled_surface, (0, 0))
         pygame.display.flip()
         clock.tick(FPS)
 
 
 def final_screen():
+    global screen, virtual_surface, width, height, v_width, v_height
     outro_text = ["Окочание",
                   "Спасибо за тестирование игры.",
                   "Покедава!"]
-    screen.fill('white')
-    fon = pygame.transform.scale(load_image('fon2.jpg'), (width, height))
-    screen.blit(fon, (0, 0))
+    virtual_surface.fill('white')
+    fon = pygame.transform.scale(load_image('fon2.jpg'), (v_width, v_height))
+    virtual_surface.blit(fon, (0, 0))
     font = pygame.font.Font(None, 40)
     text_coord = 50
     for line in outro_text:
@@ -249,7 +271,7 @@ def final_screen():
         outro_rect.top = text_coord
         outro_rect.x = 30
         text_coord += outro_rect.height
-        screen.blit(string_rendered, outro_rect)
+        virtual_surface.blit(string_rendered, outro_rect)
 
     while True:
         for event in pygame.event.get():
@@ -258,6 +280,12 @@ def final_screen():
             elif event.type == pygame.KEYDOWN or \
                     event.type == pygame.MOUSEBUTTONDOWN:
                 return
+            if event.type == pygame.VIDEORESIZE:
+                width = max(event.w, min_width)
+                height = max(event.h, min_height)
+                screen = pygame.display.set_mode((width, height), pygame.RESIZABLE)
+        scaled_surface = pygame.transform.scale(virtual_surface, (width, height))
+        screen.blit(scaled_surface, (0, 0))
         pygame.display.flip()
         clock.tick(FPS)
 
@@ -271,16 +299,9 @@ class Tree(pygame.sprite.Sprite):
         super().__init__(trees_group, all_sprites)
         self.width, self.height = tree_width, tree_height
         self.cur_img = tile_images['tree']
-        self.image = make_img(self.cur_img, width, height, self.width, self.height)
+        self.image = make_img(self.cur_img, v_width, v_height, self.width, self.height)
         self.rect = self.image.get_rect().move(
             pos_x, pos_y)
-
-    def resize(self, SW, SH):
-        global tree_width, tree_height, width, height
-        new_W, new_H = self.width * (SW / width), self.height * (SH / height)
-        self.image = pygame.transform.scale(self.cur_img,
-                                            (new_W, new_H))
-        tree_width, tree_height = new_W, new_H
 
 
 class Player(pygame.sprite.Sprite):
@@ -300,20 +321,13 @@ class Player(pygame.sprite.Sprite):
         self.frame_delay = 8
         self.time_counter = 0
         self.save_dir = 'r'
-        self.image = make_img(self.frames[self.save_dir][0], width, height, UNIT_width, UNIT_height)
+        self.image = make_img(self.frames[self.save_dir][0], v_width, v_height, UNIT_width, UNIT_height)
         self.rect = self.image.get_rect().move(
             pos_x + 15, pos_y + 5)
         self.prev_direction = ''
         self.hp = MC_hp
         self.hit = False
         self.time = 0
-
-    def resize(self, SW, SH):
-        global UNIT_width, UNIT_height, width, height
-        new_W, new_H = UNIT_width * (SW / width), UNIT_height * (SH / height)
-        self.image = pygame.transform.scale(self.image,
-                                            (new_W, new_H))
-        UNIT_width, UNIT_height = new_W, new_H
 
     def update(self, keys, vx=0, vy=0):
         global bad_end_flag
@@ -367,32 +381,32 @@ class Player(pygame.sprite.Sprite):
                 self.cur_frame = (self.cur_frame + 1) % self.frames_amount
                 if cur_direction not in 'fd ':
                     self.image = make_img(self.frames[cur_direction[0] + ('h' if self.hit else '')][self.cur_frame],
-                                          width, height, UNIT_width, UNIT_height)
+                                          v_width, v_height, UNIT_width, UNIT_height)
                 else:
                     if cur_direction in 'fd':
                         if self.prev_direction not in 'fd ':  # не пауза фд == норм двиэ
                             self.save_dir = self.prev_direction
                             self.image = make_img(
-                                self.frames[self.save_dir[0] + ('h' if self.hit else '')][self.cur_frame], width,
-                                height, UNIT_width, UNIT_height)
+                                self.frames[self.save_dir[0] + ('h' if self.hit else '')][self.cur_frame], v_width,
+                                v_height, UNIT_width, UNIT_height)
                         elif self.prev_direction not in ' ':  # == fd
                             self.image = make_img(
-                                self.frames[self.save_dir[0] + ('h' if self.hit else '')][self.cur_frame], width,
-                                height, UNIT_width, UNIT_height)
+                                self.frames[self.save_dir[0] + ('h' if self.hit else '')][self.cur_frame], v_width,
+                                v_height, UNIT_width, UNIT_height)
                         else:
                             self.cur_frame = 0
                             self.image = make_img(
-                                self.frames[self.save_dir[0] + ('h' if self.hit else '')][self.cur_frame], width,
-                                height, UNIT_width, UNIT_height)
+                                self.frames[self.save_dir[0] + ('h' if self.hit else '')][self.cur_frame], v_width,
+                                v_height, UNIT_width, UNIT_height)
                     else:
-                        self.image = make_img(self.frames[self.save_dir[0] + ('h' if self.hit else '')][0], width,
-                                              height, UNIT_width, UNIT_height)
+                        self.image = make_img(self.frames[self.save_dir[0] + ('h' if self.hit else '')][0], v_width,
+                                              v_height, UNIT_width, UNIT_height)
                 self.prev_direction = cur_direction
                 self.time_counter = 0
                 self.hit = False
 
         else:
-            self.rect.x, self.rect.y = width // 2, height // 2
+            self.rect.x, self.rect.y = v_width // 2, v_height // 2
         self.time += 1
 
 
@@ -412,7 +426,7 @@ class Bullet(pygame.sprite.Sprite):
             super().__init__(magician_bullet_group, all_sprites)
             self.image = tile_images['magician_bullet']
             self.firing_range = enemies_firing_range
-        self.image = make_img(self.image, width, height, MCbullet_width, MCbullet_height)
+        self.image = make_img(self.image, v_width, v_height, MCbullet_width, MCbullet_height)
         self.rect = self.image.get_rect().move(
             MC_coords[0] + MCbullet_width // 5.5, MC_coords[1] + MCbullet_height // 2)
 
@@ -427,18 +441,11 @@ class Bullet(pygame.sprite.Sprite):
         self.image = pygame.transform.rotate(self.image, self.angle)
         self.dist = 0
 
-    def resize(self, SW, SH):
-        global MCbullet_width, MCbullet_height, width, height
-        new_W, new_H = MCbullet_width * (SW / width), MCbullet_height * (SH / height)
-        self.image = pygame.transform.scale(self.image,
-                                            (new_W, new_H))
-        MCbullet_width, MCbullet_height = new_W, new_H
-
     def update(self):
         if self.dist > self.firing_range:
             self.kill()
-        if not -MCbullet_width <= self.rect.x <= width + MCbullet_width or \
-                not -MCbullet_height <= self.rect.y <= height + MCbullet_height:
+        if not -MCbullet_width <= self.rect.x <= v_width + MCbullet_width or \
+                not -MCbullet_height <= self.rect.y <= v_height + MCbullet_height:
             self.kill()
         else:
             self.dist += hypot(self.rect.x - (self.rect.x + self.vx), self.rect.y - (self.rect.y + self.vy))
@@ -462,7 +469,7 @@ class Villager(pygame.sprite.Sprite):
         self.frame_delay = 15
         self.time_counter = 0
         self.save_dir = 'r'
-        self.image = make_img(self.frames[self.save_dir][0], width, height, UNIT_width, UNIT_height)
+        self.image = make_img(self.frames[self.save_dir][0], v_width, v_height, UNIT_width, UNIT_height)
         self.rect = self.image.get_rect().move(
             pos_x + 15, pos_y + 5)
         self.prev_direction = ''
@@ -504,34 +511,27 @@ class Villager(pygame.sprite.Sprite):
         if self.time_counter >= self.frame_delay:
             self.cur_frame = (self.cur_frame + 1) % self.frames_amount
             if cur_direction not in 'fd ':
-                self.image = make_img(self.frames[cur_direction[0] + ('h' if self.hit else '')][self.cur_frame], width,
-                                      height, UNIT_width, UNIT_height)
+                self.image = make_img(self.frames[cur_direction[0] + ('h' if self.hit else '')][self.cur_frame], v_width,
+                                      v_height, UNIT_width, UNIT_height)
             else:
                 if cur_direction in 'fd':
                     if self.prev_direction not in 'fd ':  # не пауза фд == норм двиэ
                         self.save_dir = self.prev_direction
                         self.image = make_img(self.frames[self.save_dir[0] + ('h' if self.hit else '')][self.cur_frame],
-                                              width, height, UNIT_width, UNIT_height)
+                                              v_width, v_height, UNIT_width, UNIT_height)
                     elif self.prev_direction not in ' ':  # == fd
                         self.image = make_img(self.frames[self.save_dir[0] + ('h' if self.hit else '')][self.cur_frame],
-                                              width, height, UNIT_width, UNIT_height)
+                                              v_width, v_height, UNIT_width, UNIT_height)
                     else:
                         self.cur_frame = 0
                         self.image = make_img(self.frames[self.save_dir[0] + ('h' if self.hit else '')][self.cur_frame],
-                                              width, height, UNIT_width, UNIT_height)
+                                              v_width, v_height, UNIT_width, UNIT_height)
                 else:
-                    self.image = make_img(self.frames[self.save_dir[0] + ('h' if self.hit else '')][0], width, height,
+                    self.image = make_img(self.frames[self.save_dir[0] + ('h' if self.hit else '')][0], v_width, v_height,
                                           UNIT_width, UNIT_height)
             self.prev_direction = cur_direction
             self.time_counter = 0
             self.hit = False
-
-    def resize(self, SW, SH):
-        global MCbullet_width, MCbullet_height, width, height
-        new_W, new_H = MCbullet_width * (SW / width), MCbullet_height * (SH / height)
-        self.image = pygame.transform.scale(self.image,
-                                            (new_W, new_H))
-        MCbullet_width, MCbullet_height = new_W, new_H
 
 
 class Musketeer(pygame.sprite.Sprite):
@@ -557,7 +557,7 @@ class Musketeer(pygame.sprite.Sprite):
         self.time_counter = 0
         self.shot_counter = 0
         self.save_dir = 'r'
-        self.image = make_img(self.frames[self.save_dir][0], width, height, UNIT_width, UNIT_height)
+        self.image = make_img(self.frames[self.save_dir][0], v_width, v_height, UNIT_width, UNIT_height)
         self.rect = self.image.get_rect().move(
             pos_x + 15, pos_y + 5)
         self.prev_direction = ''
@@ -605,23 +605,23 @@ class Musketeer(pygame.sprite.Sprite):
         if self.time_counter >= self.frame_delay:
             self.cur_frame = (self.cur_frame + 1) % self.frames_amount
             if cur_direction not in 'fd ':
-                self.image = make_img(self.frames[cur_direction[0] + ('h' if self.hit else '')][self.cur_frame], width,
-                                      height, UNIT_width, UNIT_height)
+                self.image = make_img(self.frames[cur_direction[0] + ('h' if self.hit else '')][self.cur_frame], v_width,
+                                      v_height, UNIT_width, UNIT_height)
             else:
                 if cur_direction in 'fd':
                     if self.prev_direction not in 'fd ':  # не пауза фд == норм движ
                         self.save_dir = self.prev_direction
                         self.image = make_img(self.frames[self.save_dir[0] + ('h' if self.hit else '')][self.cur_frame],
-                                              width, height, UNIT_width, UNIT_height)
+                                              v_width, v_height, UNIT_width, UNIT_height)
                     elif self.prev_direction not in ' ':  # == fd
                         self.image = make_img(self.frames[self.save_dir[0] + ('h' if self.hit else '')][self.cur_frame],
-                                              width, height, UNIT_width, UNIT_height)
+                                              v_width, v_height, UNIT_width, UNIT_height)
                     else:
                         self.cur_frame = 0
                         self.image = make_img(self.frames[self.save_dir[0] + ('h' if self.hit else '')][self.cur_frame],
-                                              width, height, UNIT_width, UNIT_height)
+                                              v_width, v_height, UNIT_width, UNIT_height)
                 else:
-                    self.image = make_img(self.frames[self.save_dir[0] + ('h' if self.hit else '')][0], width, height,
+                    self.image = make_img(self.frames[self.save_dir[0] + ('h' if self.hit else '')][0], v_width, v_height,
                                           UNIT_width, UNIT_height)
             self.prev_direction = cur_direction
             self.time_counter = 0
@@ -633,13 +633,6 @@ class Musketeer(pygame.sprite.Sprite):
         if dist < 1000 and self.shot_counter >= self.shot_freq:
             self.shot_counter = 0
             Bullet((x1, y1), (x2, y2), 'Musketeer')
-
-    def resize(self, SW, SH):
-        global MCbullet_width, MCbullet_height, width, height
-        new_W, new_H = MCbullet_width * (SW / width), MCbullet_height * (SH / height)
-        self.image = pygame.transform.scale(self.image,
-                                            (new_W, new_H))
-        MCbullet_width, MCbullet_height = new_W, new_H
 
 
 class Magician(Musketeer):
@@ -669,13 +662,6 @@ class Button(pygame.sprite.Sprite):
         self.image = pygame.transform.scale(self.image, (self.size[0], self.size[1]))
         self.rect = self.image.get_rect().move(self.pos_x + 15, self.pos_y + 5)
 
-    def resize(self, SW, SH):
-        global MCbullet_width, MCbullet_height, width, height
-        new_W, new_H = MCbullet_width * (SW / width), MCbullet_height * (SH / height)
-        self.image = pygame.transform.scale(self.image,
-                                            (new_W, new_H))
-        MCbullet_width, MCbullet_height = new_W, new_H
-
     def update(self):
         if pygame.sprite.spritecollideany(self, cursor_group):
             self.set_image(self.way[:-5] + '1.png')
@@ -688,9 +674,6 @@ class Cursor(pygame.sprite.Sprite):
         super().__init__(player_group, all_sprites)
         self.image = load_image('/start_screen/cursor.png')
         self.rect = self.image.get_rect()
-
-    def resize(self, SW, SH):
-        ...
 
 
 class Camera:
@@ -707,41 +690,41 @@ class Camera:
         self.dy = 0  # -(target.rect.y + target.rect.h // 2 - height // 2) - tile_height
 
 
-def wave1(screen):
-    global width, height, background, tile_images
-    MainCharacter.rect.x, MainCharacter.rect.y = width // 2, height // 2
+def wave1():
+    global background, tile_images, v_height, v_width
+    MainCharacter.rect.x, MainCharacter.rect.y = v_width // 2, v_height // 2
     pygame.mouse.set_visible(True)
 
     tile_images['tree'] = load_image(r'game/tree.png')
-    background = pygame.transform.scale(load_image(r'game/background1.jpg'), (width, height))
+    background = pygame.transform.scale(load_image(r'game/background1.jpg'), (v_width, v_height))
 
-    update_level(screen, Villager)
+    update_level(Villager)
 
 
-def wave2(screen):
-    global width, height, background, tile_images
-    MainCharacter.rect.x, MainCharacter.rect.y = width // 2, height // 2
+def wave2():
+    global v_width, v_height, background, tile_images
+    MainCharacter.rect.x, MainCharacter.rect.y = v_width // 2, v_height // 2
     pygame.mouse.set_visible(True)
 
     tile_images['tree'] = load_image(r'game/torch-Photoroom.png')
     background = pygame.transform.scale(load_image(r'game/brick-1.png'), (width, height))
 
-    update_level(screen, Musketeer)
+    update_level(Musketeer)
 
 
-def wave3(screen):
-    global width, height, background, tile_images
-    MainCharacter.rect.x, MainCharacter.rect.y = width // 2, height // 2
+def wave3():
+    global v_width, v_height, background, tile_images
+    MainCharacter.rect.x, MainCharacter.rect.y = v_width // 2, v_height // 2
     pygame.mouse.set_visible(True)
 
     tile_images['tree'] = load_image(r'game/el.png')
     background = pygame.transform.scale(load_image(r'game/background_mag-1.png'), (width, height))
 
-    update_level(screen, Magician)
+    update_level(Magician)
 
 
-def update_level(screen, enemy):
-    global background, width, height, bad_end_flag, cur_wave
+def update_level(enemy):
+    global background, width, height, bad_end_flag, cur_wave, virtual_surface, screen
     bad_end_flag = False
     all_sprites.empty()
     enemy_group.empty()
@@ -751,12 +734,12 @@ def update_level(screen, enemy):
     resized_flag = False
     camera = Camera()
     generate_enemies(3, enemy)
+    generate_borders(v_width, v_height)
     n_enemies = 0
     while True:
-        screen.fill('black')
-        screen.blit(background, (0, 0))
+        virtual_surface.fill('black')
+        virtual_surface.blit(background, (0, 0))
         keys = pygame.key.get_pressed()
-        generate_borders(width, height)
 
         if n_enemies < 15:
             if len(enemy_group) < 2:
@@ -764,14 +747,15 @@ def update_level(screen, enemy):
                 n_enemies += n
         else:
             if len(enemy_group) == 0:
+                mx_x = max(trees_group, key=lambda spr: spr.rect.x).rect.x
                 for tree in trees_group:
-                    if (tree.rect.x == width - tree_width and
-                            (height // 2 - tree_height) <= tree.rect.y <= (height // 2 + tree_height)):
+                    x, y = tree.rect.x, tree.rect.y
+                    if x == mx_x and ((height - 1) // 2 - tree_height) <= y <= ((height + 1) // 2 + tree_height):
                         tree.kill()
-            if MainCharacter.rect.x > width:
+            if MainCharacter.rect.x > v_width:
                 cur_wave += 1
                 if cur_wave <= 2:
-                    waves[cur_wave](screen)
+                    waves[cur_wave]()
                 return
 
         for event in pygame.event.get():
@@ -783,43 +767,33 @@ def update_level(screen, enemy):
                 for sprite in enemy_group:
                     sprite.kill()
             if event.type == pygame.VIDEORESIZE:
-                new_width = max(event.w, min_width)
-                new_height = max(event.h, min_height)
-                screen = pygame.display.set_mode((new_width, new_height), pygame.RESIZABLE)
-                resized_flag = True
-                new_SW, new_SH = new_width, new_height
-                background = pygame.transform.scale(background, (new_SW, new_SH))
+                width = max(event.w, min_width)
+                height = max(event.h, min_height)
+                screen = pygame.display.set_mode((width, height), pygame.RESIZABLE)
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
                     Bullet((MainCharacter.rect.x, MainCharacter.rect.y), event.pos)
 
         camera.update(MainCharacter)
-        for sprite in all_sprites:
-            if resized_flag:
-                sprite.resize(new_SW, new_SH)
-            camera.apply(sprite)
-        if resized_flag:
-            width, height = new_SW, new_SH
-        resized_flag = False
-
-        trees_group.draw(screen)
+        trees_group.draw(virtual_surface)
         player_group.update(keys)
         if bad_end_flag:
             return
-        player_group.draw(screen)
+        player_group.draw(virtual_surface)
         MCbullet_group.update()
-        MCbullet_group.draw(screen)
+        MCbullet_group.draw(virtual_surface)
         enemy_group.update(MainCharacter.rect.x, MainCharacter.rect.y)
-        enemy_group.draw(screen)
+        enemy_group.draw(virtual_surface)
         musketeer_bullet_group.update()
-        musketeer_bullet_group.draw(screen)
+        musketeer_bullet_group.draw(virtual_surface)
         magician_bullet_group.update()
-        magician_bullet_group.draw(screen)
+        magician_bullet_group.draw(virtual_surface)
         draw_hp_bar(MainCharacter, MainCharacter.rect.x, MainCharacter.rect.y, MainCharacter.hp)
         for sprite in all_sprites:
             if sprite in enemy_group:
                 draw_hp_bar(sprite, sprite.rect.x, sprite.rect.y, sprite.hp)
-
+        scaled_surface = pygame.transform.scale(virtual_surface, (width, height))
+        screen.blit(scaled_surface, (0, 0))
         pygame.display.flip()
         clock.tick(FPS)
 
@@ -843,13 +817,13 @@ def generate_enemies(n, enemy):
     for _ in range(n):
         side = randint(1, 4)
         if side == 1:
-            enemy(0, randint(0, height))
+            enemy(0, randint(0, v_height))
         elif side == 2:
-            enemy(randint(0, width), 0)
+            enemy(randint(0, v_width), 0)
         elif side == 4:
-            enemy(width, randint(0, height))
+            enemy(v_width, randint(0, v_height))
         else:
-            enemy(randint(0, width), height)
+            enemy(randint(0, v_width), v_height)
 
 
 def draw_hp_bar(self, x, y, cur_hp):
@@ -869,8 +843,8 @@ def draw_hp_bar(self, x, y, cur_hp):
     outline_rect = pygame.Rect(x, y - BAR_HEIGHT * 2, BAR_LENGTH, BAR_HEIGHT)
     cur_hp = (cur_hp / hp) * BAR_LENGTH
     fill_rect = pygame.Rect(x, y - BAR_HEIGHT * 2, cur_hp, BAR_HEIGHT)
-    pygame.draw.rect(screen, color1, fill_rect)
-    pygame.draw.rect(screen, color2, outline_rect, 1)
+    pygame.draw.rect(virtual_surface, color1, fill_rect)
+    pygame.draw.rect(virtual_surface, color2, outline_rect, 1)
 
 
 all_sprites = pygame.sprite.Group()
@@ -888,7 +862,7 @@ tile_images = {
     'MC_bullet': load_image(r'game/Bullet.png'),
     'magician_bullet': load_image(r'game/magic_bullet.png')}
 
-background = pygame.transform.scale(load_image(r'game/road.png'), (width, height))
+background = pygame.transform.scale(load_image(r'game/road.png'), (v_width, v_height))
 
 player_media = {'moving': [load_image(f'/game/horse/horse_{i}.png') for i in range(6)],
                 'moving_h': [load_image(f'/game/horse_hit/horse_hit_{i}.png') for i in range(6)]}
@@ -936,8 +910,8 @@ if __name__ == '__main__':
     while True:
         start_screen()
         comic()
-        MainCharacter = Player(width // 2, height // 2)
-        wave1(screen)
+        MainCharacter = Player(v_width // 2, v_height // 2)
+        wave1()
         if bad_end_flag:
             bad_end()
             continue
