@@ -648,6 +648,9 @@ class Button(pygame.sprite.Sprite):
         else:
             self.set_image(self.way[:-5] + '0.png')
 
+    def resize(self, new_w, new_h):
+        ...
+
 
 class Cursor(pygame.sprite.Sprite):
     def __init__(self):
