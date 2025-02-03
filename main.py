@@ -867,7 +867,7 @@ def update_level(enemy):
         trees_group.draw(virtual_surface)
         player_group.update(keys)
         if bad_end_flag:
-            return
+            return bad_end()
         player_group.draw(virtual_surface)
         MCbullet_group.update()
         MCbullet_group.draw(virtual_surface)
@@ -1019,7 +1019,7 @@ Ntrees_horz, Ntrees_vert = 30, 18
 
 MC_hp, Vil_hp, Musk_hp, Mag_hp = 100, 100, 75, 150
 MC_damage, Vil_damage, Musk_damage, Mag_damage = 10, 10, 10, 10
-v_damage_delay = 120
+v_damage_delay = 2
 
 enemies_firing_range = 250
 MC_firing_range = 300
