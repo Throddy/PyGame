@@ -12,8 +12,8 @@ pygame.mixer.music.set_volume(0.1)
 pygame.display.set_caption('Walking')
 size = width, height = 1400, 800
 min_width, min_height = 1200, 700
-screen = pygame.display.set_mode(size, pygame.RESIZABLE, pygame.FULLSCREEN)
-
+# screen = pygame.display.set_mode(size, pygame.RESIZABLE, pygame.FULLSCREEN)
+screen = pygame.display.set_mode(size)
 
 
 def load_image(name, colorkey=None):
@@ -805,7 +805,6 @@ def update_level(screen, enemy):
         trees_group.draw(screen)
         player_group.update(keys)
         if bad_end_flag:
-
             return
         player_group.draw(screen)
         MCbullet_group.update()
