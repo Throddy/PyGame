@@ -1,5 +1,7 @@
-import pygame, os, sys
+import pygame, os, sys, csv
+from fractions import Fraction
 from random import randint
+from random import choice as ch
 from PIL import Image
 from math import atan2, hypot, degrees
 
@@ -38,75 +40,6 @@ def load_image(name, colorkey=None):
     else:
         image = image.convert_alpha()
     return image
-
-
-def convert_gif(name):
-    path = os.path.join(f'data/{name}')  # Заменил \ на / для кроссплатформенности
-    if not os.path.isfile(path):
-        print(f"Файл с изображением '{path}' не найден")
-        sys.exit()
-
-    gif = Image.open(path)
-    frames = []
-
-    # Определяем прозрачный цвет (если есть)
-    transparent_color = None
-    if gif.info.get("transparency") is not None:
-        transparent_color = gif.info["transparency"]
-
-    while True:
-        frame = gif.convert("RGBA")  # Преобразуем в RGBA
-
-        # Создаем новое изображение с прозрачностью
-        new_frame = Image.new("RGBA", frame.size, (0, 0, 0, 0))
-
-        # Копируем пиксели, игнорируя фон
-        for x in range(frame.width):
-            for y in range(frame.height):
-                pixel = frame.getpixel((x, y))
-                if transparent_color is None or pixel[:3] != (transparent_color, transparent_color, transparent_color):
-                    new_frame.putpixel((x, y), pixel)
-
-        # Преобразуем в Pygame-совместимый формат
-        pygame_frame = pygame.image.fromstring(new_frame.tobytes(), new_frame.size, "RGBA")
-        frames.append(pygame_frame)
-
-        try:
-            gif.seek(gif.tell() + 1)
-        except EOFError:
-            break
-
-    return frames
-
-
-"""
-def load_level(filename):
-    filename = "data/game/" + filename
-    # читаем уровень, убирая символы перевода строки
-    with open(filename, 'r') as mapFile:
-        level_map = [line.strip() for line in mapFile]
-
-    # и подсчитываем максимальную длину
-    max_width = max(map(len, level_map))
-
-    # дополняем каждую строку пустыми клетками ('.')
-    return list(map(lambda x: x.ljust(max_width, '.'), level_map))
-
-
-def generate_level(level):
-    new_player, x, y = None, None, None
-    for y in range(len(level)):
-        for x in range(len(level[y])):
-            if level[y][x] == '#':
-                Tile('tree', x, y)
-            elif level[y][x] == '@':
-                new_player = Player(x, y)
-    # вернем игрока, а также размер поля в клетках
-    return new_player, x, y
-"""
-
-
-# test
 
 
 def terminate():
@@ -151,9 +84,15 @@ def start_screen():
                     if pygame.sprite.spritecollideany(start_button, cursor_group):
                         cursor.kill()
                         button_group.empty()
+                        start_mode_flag = True
                         return
                     if pygame.sprite.spritecollideany(exit_button, cursor_group):
                         terminate()
+                    if pygame.sprite.spritecollideany(non_stop_button, cursor_group):
+                        cursor.kill()
+                        button_group.empty()
+                        non_stop_mode_flag = True
+                        return
             if event.type == pygame.VIDEORESIZE:
                 width = max(event.w, min_width)
                 height = max(event.h, min_height)
@@ -216,7 +155,7 @@ def comic():
 
 
 def bad_end():
-    global cur_wave, screen, width, height, v_width, v_height
+    global cur_wave, screen, width, height, v_width, v_height, non_stop_mode_flag
     pygame.mixer.music.load('data/game/music/bad_end.mp3')
     pygame.mixer.music.play(-1)
     pygame.mixer.music.set_volume(0.05)
@@ -229,6 +168,9 @@ def bad_end():
     pygame.mouse.set_visible(False)
     k_w, k_h = (width / v_width), (height / v_height)
     start_button = Button(300 * k_w, 600 * k_h, 300, 600, (350 * k_w, 100 * k_h), (350, 100))
+    if non_stop_mode_flag:
+        results = stat_results(stat_file_name)
+    start_button = Button(300, 600, (350, 100))
     start_button.set_image('start_screen/startbutton/sprite_0.png')
 
     exit_button = Button(700 * k_w, 600 * k_h, 700, 600, (350 * k_w, 100 * k_h), (350, 100))
@@ -238,6 +180,17 @@ def bad_end():
         screen.fill(pygame.Color('black'))
         fon = pygame.transform.scale(load_image('start_screen/game_over2.png'), (width, height))
         screen.blit(fon, (0, 0))
+
+        if non_stop_mode_flag:
+            text_x = 10
+            text_y = 10
+            for title, value in results:
+                font = pygame.font.Font(None, 30)
+                text = font.render(f'{title} ---> {value}', True, (100, 255, 100))
+                text_h = text.get_height()
+                screen.blit(text, (text_x, text_y))
+                text_y += text_h * 1.2
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
@@ -247,6 +200,7 @@ def bad_end():
                         cursor.kill()
                         button_group.empty()
                         cur_wave = 0
+                        start_button, non_stop_mode_flag = False, False
                         return
                     if pygame.sprite.spritecollideany(exit_button, cursor_group):
                         terminate()
@@ -362,9 +316,13 @@ class Player(pygame.sprite.Sprite):
 
     def update(self, keys, vx=0, vy=0):
         global bad_end_flag
+        if self.time.denominator == 1 and non_stop_mode_flag:
+            review_stats(stat_file_name, time_ticked=True)
         if self.hp <= 0:
             bad_end_flag = True
             self.kill()
+            if non_stop_mode_flag:
+                return
         if pygame.sprite.spritecollide(self, musketeer_bullet_group, dokill=True):
             self.hit = True
             ouch_snd.play()
@@ -441,7 +399,7 @@ class Player(pygame.sprite.Sprite):
 
         else:
             self.rect.x, self.rect.y = v_width // 2, v_height // 2
-        self.time += 1
+        self.time += Fraction(1, FPS)
 
 
 class Bullet(pygame.sprite.Sprite):
@@ -513,6 +471,8 @@ class Villager(pygame.sprite.Sprite):
     def update(self, x2, y2, norm_v=3 / (2 ** 0.5)):
         if self.hp <= 0:
             self.kill()
+            if non_stop_mode_flag:
+                review_stats(stat_file_name, self, killed=True)
 
         if pygame.sprite.spritecollide(self, MCbullet_group, dokill=True):
             self.hit = True
@@ -599,6 +559,9 @@ class Musketeer(pygame.sprite.Sprite):
     def update(self, x2, y2, norm_v=3 / (2 ** 0.5)):
         if self.hp <= 0:
             self.kill()
+            if non_stop_mode_flag:
+                review_stats(stat_file_name, self, killed=True)
+
 
         if pygame.sprite.spritecollide(self, MCbullet_group, dokill=True):
             self.hit = True
@@ -777,6 +740,74 @@ def wave3():
     update_level(Magician)
 
 
+def non_stopMODE():
+    global background, width, height, bad_end_flag, cur_wave, virtual_surface, screen, headers, stat_file_name
+    pygame.mouse.set_visible(True)
+
+    tile_images['tree'] = load_image(r'game/el.png')
+    background = pygame.transform.scale(load_image(r'game/background_mag-1.png'), (v_width, v_height))
+    start_stats(stat_file_name)
+
+    bad_end_flag = False
+    all_sprites.empty()
+    enemy_group.empty()
+    MCbullet_group.empty()
+    musketeer_bullet_group.empty()
+    magician_bullet_group.empty()
+    resized_flag = False
+    camera = Camera()
+    generate_borders(v_width, v_height)
+    av_enemies = [Villager, Musketeer, Magician]
+    for _ in range(10):
+        generate_enemies(2, ch(av_enemies))
+
+    while True:
+        virtual_surface.fill('black')
+        virtual_surface.blit(background, (0, 0))
+        keys = pygame.key.get_pressed()
+
+        if len(enemy_group) < 20:
+            generate_enemies(n := randint(2, 5), ch(av_enemies))
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                terminate()
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_q:
+                return
+            if event.type == pygame.VIDEORESIZE:
+                width = max(event.w, min_width)
+                height = max(event.h, min_height)
+                screen = pygame.display.set_mode((width, height), pygame.RESIZABLE)
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    gun_snd.play()
+                    Bullet((MainCharacter.rect.x, MainCharacter.rect.y), event.pos)
+                    review_stats(stat_file_name, shoted=True)
+
+        camera.update(MainCharacter)
+        trees_group.draw(virtual_surface)
+        player_group.update(keys)
+        if bad_end_flag:
+            return
+        player_group.draw(virtual_surface)
+        MCbullet_group.update()
+        MCbullet_group.draw(virtual_surface)
+        enemy_group.update(MainCharacter.rect.x, MainCharacter.rect.y)
+        enemy_group.draw(virtual_surface)
+        musketeer_bullet_group.update()
+        musketeer_bullet_group.draw(virtual_surface)
+        magician_bullet_group.update()
+        magician_bullet_group.draw(virtual_surface)
+        draw_hp_bar(MainCharacter, MainCharacter.rect.x, MainCharacter.rect.y, MainCharacter.hp)
+        for sprite in all_sprites:
+            if sprite in enemy_group:
+                draw_hp_bar(sprite, sprite.rect.x, sprite.rect.y, sprite.hp)
+        scaled_surface = pygame.transform.scale(virtual_surface, (width, height))
+        screen.blit(scaled_surface, (0, 0))
+        pygame.display.flip()
+        clock.tick(FPS)
+
+
 def update_level(enemy):
     global background, width, height, bad_end_flag, cur_wave, virtual_surface, screen
     bad_end_flag = False
@@ -902,6 +933,50 @@ def draw_hp_bar(self, x, y, cur_hp):
     pygame.draw.rect(virtual_surface, color2, outline_rect, 1)
 
 
+def start_stats(file_name):
+    with open(file_name, 'w') as csv_file:
+        writer = csv.DictWriter(csv_file, fieldnames=headers,
+        delimiter=';', quoting=csv.QUOTE_NONNUMERIC)
+        writer.writeheader()
+        start_data = {}
+        for header, start_vals in zip(headers, [0] * len(headers)):
+            start_data[header] = start_vals
+        writer.writerow(start_data)
+
+def review_stats(file_name, enemy=None, killed=False, time_ticked=False, shoted=False):
+    global headers
+    if killed:
+        if type(enemy) == Villager:
+            change_col = headers[0]
+        elif type(enemy) == Musketeer:
+            change_col = headers[1]
+        elif type(enemy) == Magician:
+            change_col = headers[2]
+    elif shoted:
+        change_col = headers[4]
+    elif time_ticked:
+        change_col = headers[5]
+
+    with open(file_name, 'r') as csv_file:
+        data = list(csv.DictReader(csv_file, delimiter=';', quotechar='"'))
+        new_row = {k: int(v) + 1 if k == change_col else v for k, v in data[len(data) - 1].items()}
+        if killed:
+            new_row = {k: int(v) + 1 if k == headers[3] else v for k, v in new_row.items()}
+        data.append(new_row)
+
+    with open(stat_file_name, 'w') as csv_file:
+        writer = csv.DictWriter(csv_file, fieldnames=headers, delimiter=';', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        writer.writeheader()
+        for row in data:
+            writer.writerow(row)
+
+
+def stat_results(file_name):
+    with open(file_name, 'r') as csv_file:
+        data = list(csv.DictReader(csv_file, delimiter=';', quotechar='"'))
+    return data[-1].items()
+
+
 all_sprites = pygame.sprite.Group()
 cursor_group = pygame.sprite.Group()
 trees_group = pygame.sprite.Group()
@@ -952,22 +1027,36 @@ BAR_LENGTH, BAR_HEIGHT = UNIT_width, 10
 waves = [wave1, wave2, wave3]
 cur_wave = 0
 
+stat_file_name = 'stat.csv'
+headers = ["Total VILLAGERS you've destroyed", "Total MUSKETEERS you've destroyed",
+           "Total MAGICIANS you've destroyed", "Total ENEMIES you've killed",
+           "Total SHOTS you've done", "Total TIME(seconds) you' spent"]
+
 clock = pygame.time.Clock()
 FPS = 60
 
+start_mode_flag = False
+non_stop_mode_flag = False
 bad_end_flag = False
 exit_flag = False
-"""
-player, level_x, level_y = generate_level(load_level('lvl1.txt'))
-"""
+
 
 if __name__ == '__main__':
     while True:
         start_screen()
-        comic()
-        MainCharacter = Player(v_width // 2, v_height // 2)
-        wave1()
-        if bad_end_flag:
-            bad_end()
-            continue
-        final_screen()
+        if start_mode_flag:
+            comic()
+            MainCharacter = Player(v_width // 2, v_height // 2)
+            wave1()
+            if bad_end_flag:
+                bad_end()
+                continue
+            final_screen()
+        elif non_stop_mode_flag:
+            MainCharacter = Player(v_width // 2, v_height // 2)
+            non_stopMODE()
+            if bad_end_flag:
+                bad_end()
+                continue
+            final_screen()
+        terminate()
