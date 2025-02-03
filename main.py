@@ -167,8 +167,14 @@ def bad_end():
         virtual_surface.blit(fon, (0, 0))
 
         if non_stop_mode_flag:
+            text_x = 10
+            text_y = 10
             for title, value in results:
-                ...
+                font = pygame.font.Font(None, 30)
+                text = font.render(f'{title} ---> {value}', True, (100, 255, 100))
+                text_h = text.get_height()
+                virtual_surface.blit(text, (text_x, text_y))
+                text_y += text_h * 1.2
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -179,6 +185,7 @@ def bad_end():
                         cursor.kill()
                         button_group.empty()
                         cur_wave = 0
+                        start_button, non_stop_mode_flag = False, False
                         return
                     if pygame.sprite.spritecollideany(exit_button, cursor_group):
                         terminate()
@@ -277,7 +284,7 @@ class Player(pygame.sprite.Sprite):
 
     def update(self, keys, vx=0, vy=0):
         global bad_end_flag
-        if self.time.denominator == 1:
+        if self.time.denominator == 1 and non_stop_mode_flag:
             review_stats(stat_file_name, time_ticked=True)
         if self.hp <= 0:
             bad_end_flag = True
@@ -704,17 +711,14 @@ def non_stopMODE():
         virtual_surface.blit(background, (0, 0))
         keys = pygame.key.get_pressed()
 
-        if len(enemy_group) < 17:
-            generate_enemies(n := randint(2, 4), ch(av_enemies))
+        if len(enemy_group) < 20:
+            generate_enemies(n := randint(2, 5), ch(av_enemies))
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
             if event.type == pygame.KEYDOWN and event.key == pygame.K_q:
                 return
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_m:
-                for sprite in enemy_group:
-                    sprite.kill()
             if event.type == pygame.VIDEORESIZE:
                 width = max(event.w, min_width)
                 height = max(event.h, min_height)
@@ -967,7 +971,9 @@ waves = [wave1, wave2, wave3]
 cur_wave = 0
 
 stat_file_name = 'stat.csv'
-headers = ['villagers', 'musketeers', 'mags', 'total killed', 'total shots', 'total time']
+headers = ["Total VILLAGERS you've destroyed", "Total MUSKETEERS you've destroyed",
+           "Total MAGICIANS you've destroyed", "Total ENEMIES you've killed",
+           "Total SHOTS you've done", "Total TIME(seconds) you' spent"]
 
 clock = pygame.time.Clock()
 FPS = 60
@@ -995,4 +1001,5 @@ if __name__ == '__main__':
             if bad_end_flag:
                 bad_end()
                 continue
+            final_screen()
         terminate()
