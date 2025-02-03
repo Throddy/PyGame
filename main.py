@@ -12,8 +12,8 @@ pygame.mixer.music.set_volume(0.1)
 pygame.display.set_caption('Walking')
 size = width, height = 1400, 800
 min_width, min_height = 1200, 700
-# screen = pygame.display.set_mode(size, pygame.RESIZABLE, pygame.FULLSCREEN)
-screen = pygame.display.set_mode(size)
+screen = pygame.display.set_mode(size, pygame.RESIZABLE, pygame.FULLSCREEN)
+# screen = pygame.display.set_mode(size)
 
 
 def load_image(name, colorkey=None):
@@ -313,6 +313,7 @@ class Player(pygame.sprite.Sprite):
         new_W, new_H = UNIT_width * (SW / width), UNIT_height * (SH / height)
         self.image = pygame.transform.scale(self.image,
                                             (new_W, new_H))
+        self.rect.x, self.rect.y = self.rect.x * (SW / width), self.rect.y * (SH / height)
         UNIT_width, UNIT_height = new_W, new_H
 
     def update(self, keys, vx=0, vy=0):
@@ -527,11 +528,11 @@ class Villager(pygame.sprite.Sprite):
             self.hit = False
 
     def resize(self, SW, SH):
-        global MCbullet_width, MCbullet_height, width, height
-        new_W, new_H = MCbullet_width * (SW / width), MCbullet_height * (SH / height)
+        global UNIT_width, UNIT_height, width, height
+        new_W, new_H = UNIT_width * (SW / width), UNIT_height * (SH / height)
         self.image = pygame.transform.scale(self.image,
                                             (new_W, new_H))
-        MCbullet_width, MCbullet_height = new_W, new_H
+        UNIT_width, UNIT_height = new_W, new_H
 
 
 class Musketeer(pygame.sprite.Sprite):
@@ -635,11 +636,11 @@ class Musketeer(pygame.sprite.Sprite):
             Bullet((x1, y1), (x2, y2), 'Musketeer')
 
     def resize(self, SW, SH):
-        global MCbullet_width, MCbullet_height, width, height
-        new_W, new_H = MCbullet_width * (SW / width), MCbullet_height * (SH / height)
+        global UNIT_width, UNIT_height, width, height
+        new_W, new_H = UNIT_width * (SW / width), UNIT_height * (SH / height)
         self.image = pygame.transform.scale(self.image,
                                             (new_W, new_H))
-        MCbullet_width, MCbullet_height = new_W, new_H
+        UNIT_width, UNIT_height = new_W, new_H
 
 
 class Magician(Musketeer):
@@ -794,11 +795,10 @@ def update_level(screen, enemy):
                     Bullet((MainCharacter.rect.x, MainCharacter.rect.y), event.pos)
 
         camera.update(MainCharacter)
-        for sprite in all_sprites:
-            if resized_flag:
-                sprite.resize(new_SW, new_SH)
-            camera.apply(sprite)
         if resized_flag:
+            for sprite in all_sprites:
+                sprite.resize(new_SW, new_SH)
+                camera.apply(sprite)
             width, height = new_SW, new_SH
         resized_flag = False
 
