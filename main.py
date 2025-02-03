@@ -739,6 +739,9 @@ def update_level(screen, enemy):
     bad_end_flag = False
     all_sprites.empty()
     enemy_group.empty()
+    MCbullet_group.empty()
+    musketeer_bullet_group.empty()
+    magician_bullet_group.empty()
     resized_flag = False
     camera = Camera()
     generate_enemies(3, enemy)
@@ -796,6 +799,7 @@ def update_level(screen, enemy):
         trees_group.draw(screen)
         player_group.update(keys)
         if bad_end_flag:
+
             return
         player_group.draw(screen)
         MCbullet_group.update()
