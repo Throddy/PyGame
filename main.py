@@ -110,29 +110,29 @@ def terminate():
 
 
 def start_screen():
-    global width, height, screen, virtual_surface, v_width, v_height
-    screen = pygame.display.set_mode((v_width, v_height))
+    global width, height, screen, v_width, v_height
     cursor = Cursor()
     all_sprites.add(cursor)
     cursor_group.add(cursor)
     flag = False
     pygame.mouse.set_visible(False)
 
-    title = Button(410, 10, (550, 120))
+    k_w, k_h = (width / v_width), (height / v_height)
+    title = Button(410 * k_w, 10 * k_h, 410, 10,(550 * k_w, 120 * k_h),  (550, 120))
     title.set_image('start_screen/title/title_0.png')
 
-    start_button = Button(500, 200, (350, 100))
+    start_button = Button(500 * k_w, 200 * k_h, 500, 200, (350 * k_w, 100 * k_h),  (350, 100))
     start_button.set_image('start_screen/startbutton/sprite_0.png')
 
-    exit_button = Button(500, 350, (350, 100))
+    exit_button = Button(500 * k_w, 350 * k_h, 500, 350, (350 * k_w, 100 * k_h), (350, 100))
     exit_button.set_image('start_screen/exitbutton/exitbutton_0.png')
 
-    non_stop_button = Button(500, 500, (350, 100))
+    non_stop_button = Button(500 * k_w, 500 * k_h, 500, 500, (350 * k_w, 100 * k_h), (350, 100))
     non_stop_button.set_image('start_screen/nonstopbutton/nonstop_0.png')
 
     while True:
         screen.fill(pygame.Color('black'))
-        fon = pygame.transform.scale(load_image('/start_screen/start_background.png'), (v_width, v_height))
+        fon = pygame.transform.scale(load_image('/start_screen/start_background.png'), (width, height))
         screen.blit(fon, (0, 0))
 
         for event in pygame.event.get():
@@ -146,6 +146,12 @@ def start_screen():
                         return
                     if pygame.sprite.spritecollideany(exit_button, cursor_group):
                         terminate()
+            if event.type == pygame.VIDEORESIZE:
+                width = max(event.w, min_width)
+                height = max(event.h, min_height)
+                screen = pygame.display.set_mode((width, height), pygame.RESIZABLE)
+                for btn in button_group:
+                    btn.resize()
 
             if event.type == pygame.MOUSEMOTION:
                 cords = event.pos
@@ -161,18 +167,18 @@ def start_screen():
 
 def comic():
     global width, height, screen, v_width, v_height
-    screen = pygame.display.set_mode((v_width, v_height))
     cursor = Cursor()
     all_sprites.add(cursor)
     cursor_group.add(cursor)
     flag = False
     pygame.mouse.set_visible(False)
-    start_button = Button(0, 700, (300, 80))
+    k_w, k_h = (width / v_width), (height / v_height)
+    start_button = Button(0 * k_w, 700 * k_h, 0, 700,(300 * k_w, 80 * k_h), (300, 80))
     start_button.set_image('start_screen/startbutton/sprite_0.png')
 
     while True:
         screen.fill(pygame.Color('black'))
-        fon = pygame.transform.scale(load_image('start_screen/comic.png'), (v_width, v_height))
+        fon = pygame.transform.scale(load_image('start_screen/comic.png'), (width, height))
         screen.blit(fon, (0, 0))
 
         for event in pygame.event.get():
@@ -187,6 +193,12 @@ def comic():
                 cords = event.pos
                 flag = pygame.mouse.get_focused()
                 cursor.rect.x, cursor.rect.y = cords
+            if event.type == pygame.VIDEORESIZE:
+                width = max(event.w, min_width)
+                height = max(event.h, min_height)
+                screen = pygame.display.set_mode((width, height), pygame.RESIZABLE)
+                for btn in button_group:
+                    btn.resize()
         button_group.update()
         button_group.draw(screen)
         if flag:
@@ -197,7 +209,6 @@ def comic():
 
 def bad_end():
     global cur_wave, screen, width, height, v_width, v_height
-    screen = pygame.display.set_mode((v_width, v_height))
     button_group.empty()
     cursor_group.empty()
     cursor = Cursor()
@@ -205,15 +216,16 @@ def bad_end():
     cursor_group.add(cursor)
     flag = False
     pygame.mouse.set_visible(False)
-    start_button = Button(300, 600, (350, 100))
+    k_w, k_h = (width / v_width), (height / v_height)
+    start_button = Button(300 * k_w, 600 * k_h, 300, 600, (350 * k_w, 100 * k_h), (350, 100))
     start_button.set_image('start_screen/startbutton/sprite_0.png')
 
-    exit_button = Button(700, 600, (350, 100))
+    exit_button = Button(700 * k_w, 600 * k_h, 700, 600, (350 * k_w, 100 * k_h), (350, 100))
     exit_button.set_image('start_screen/exitbutton/exitbutton_0.png')
 
     while True:
         screen.fill(pygame.Color('black'))
-        fon = pygame.transform.scale(load_image('start_screen/game_over.jpeg'), (v_width, v_height))
+        fon = pygame.transform.scale(load_image('start_screen/game_over.jpeg'), (width, height))
         screen.blit(fon, (0, 0))
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -227,6 +239,12 @@ def bad_end():
                         return
                     if pygame.sprite.spritecollideany(exit_button, cursor_group):
                         terminate()
+            if event.type == pygame.VIDEORESIZE:
+                width = max(event.w, min_width)
+                height = max(event.h, min_height)
+                screen = pygame.display.set_mode((width, height), pygame.RESIZABLE)
+                for btn in button_group:
+                    btn.resize()
             if event.type == pygame.MOUSEMOTION:
                 cords = event.pos
                 flag = pygame.mouse.get_focused()
@@ -241,12 +259,11 @@ def bad_end():
 
 def final_screen():
     global screen, width, height, v_width, v_height
-    screen = pygame.display.set_mode((v_width, v_height))
     outro_text = ["Окочание",
                   "Спасибо за тестирование игры.",
                   "Покедава!"]
     screen.fill('white')
-    fon = pygame.transform.scale(load_image('fon2.jpg'), (v_width, v_height))
+    fon = pygame.transform.scale(load_image('fon2.jpg'), (width, height))
     screen.blit(fon, (0, 0))
     font = pygame.font.Font(None, 40)
     text_coord = 50
@@ -266,6 +283,12 @@ def final_screen():
             elif event.type == pygame.KEYDOWN or \
                     event.type == pygame.MOUSEBUTTONDOWN:
                 return
+            if event.type == pygame.VIDEORESIZE:
+                width = max(event.w, min_width)
+                height = max(event.h, min_height)
+                screen = pygame.display.set_mode((width, height), pygame.RESIZABLE)
+                for btn in button_group:
+                    btn.resize()
         pygame.display.flip()
         clock.tick(FPS)
 
@@ -491,8 +514,8 @@ class Villager(pygame.sprite.Sprite):
         if self.time_counter >= self.frame_delay:
             self.cur_frame = (self.cur_frame + 1) % self.frames_amount
             if cur_direction not in 'fd ':
-                self.image = make_img(self.frames[cur_direction[0] + ('h' if self.hit else '')][self.cur_frame], v_width,
-                                      v_height, UNIT_width, UNIT_height)
+                self.image = make_img(self.frames[cur_direction[0] + ('h' if self.hit else '')][self.cur_frame],
+                                      v_width, v_height, UNIT_width, UNIT_height)
             else:
                 if cur_direction in 'fd':
                     if self.prev_direction not in 'fd ':  # не пауза фд == норм двиэ
@@ -507,8 +530,8 @@ class Villager(pygame.sprite.Sprite):
                         self.image = make_img(self.frames[self.save_dir[0] + ('h' if self.hit else '')][self.cur_frame],
                                               v_width, v_height, UNIT_width, UNIT_height)
                 else:
-                    self.image = make_img(self.frames[self.save_dir[0] + ('h' if self.hit else '')][0], v_width, v_height,
-                                          UNIT_width, UNIT_height)
+                    self.image = make_img(self.frames[self.save_dir[0] + ('h' if self.hit else '')][0], v_width,
+                                          v_height, UNIT_width, UNIT_height)
             self.prev_direction = cur_direction
             self.time_counter = 0
             self.hit = False
@@ -585,8 +608,8 @@ class Musketeer(pygame.sprite.Sprite):
         if self.time_counter >= self.frame_delay:
             self.cur_frame = (self.cur_frame + 1) % self.frames_amount
             if cur_direction not in 'fd ':
-                self.image = make_img(self.frames[cur_direction[0] + ('h' if self.hit else '')][self.cur_frame], v_width,
-                                      v_height, UNIT_width, UNIT_height)
+                self.image = make_img(self.frames[cur_direction[0] + ('h' if self.hit else '')][self.cur_frame],
+                                      v_width, v_height, UNIT_width, UNIT_height)
             else:
                 if cur_direction in 'fd':
                     if self.prev_direction not in 'fd ':  # не пауза фд == норм движ
@@ -601,8 +624,8 @@ class Musketeer(pygame.sprite.Sprite):
                         self.image = make_img(self.frames[self.save_dir[0] + ('h' if self.hit else '')][self.cur_frame],
                                               v_width, v_height, UNIT_width, UNIT_height)
                 else:
-                    self.image = make_img(self.frames[self.save_dir[0] + ('h' if self.hit else '')][0], v_width, v_height,
-                                          UNIT_width, UNIT_height)
+                    self.image = make_img(self.frames[self.save_dir[0] + ('h' if self.hit else '')][0], v_width,
+                                          v_height, UNIT_width, UNIT_height)
             self.prev_direction = cur_direction
             self.time_counter = 0
             self.hit = False
@@ -630,11 +653,13 @@ class Magician(Musketeer):
 
 
 class Button(pygame.sprite.Sprite):
-    def __init__(self, pos_x, pos_y, size):
+    def __init__(self, pos_x, pos_y, x, y, size, size2):
         super().__init__(button_group, all_sprites)
         self.size = size
+        self.WIDTH, self.HEIGHT = size2
         self.pos_x = pos_x
         self.pos_y = pos_y
+        self.X, self.Y = x, y
 
     def set_image(self, way):
         self.way = way
@@ -648,8 +673,12 @@ class Button(pygame.sprite.Sprite):
         else:
             self.set_image(self.way[:-5] + '0.png')
 
-    def resize(self, new_w, new_h):
-        ...
+    def resize(self):
+        global v_width, v_height, width, height
+        new_W, new_H = self.WIDTH * (width / v_width), self.HEIGHT * (height / v_height)
+        self.image = pygame.transform.scale(self.image, (new_W, new_H))
+        self.pos_x, self.pos_y = self.X * (width / v_width), self.Y * (height / v_height)
+        self.rect = self.image.get_rect().move(self.pos_x + 15, self.pos_y + 5)
 
 
 class Cursor(pygame.sprite.Sprite):
@@ -894,7 +923,6 @@ if __name__ == '__main__':
         start_screen()
         comic()
         MainCharacter = Player(v_width // 2, v_height // 2)
-        screen = pygame.display.set_mode(size, pygame.RESIZABLE, pygame.FULLSCREEN)
         wave1()
         if bad_end_flag:
             bad_end()
