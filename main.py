@@ -87,6 +87,7 @@ def start_screen():
                         cursor.kill()
                         button_group.empty()
                         start_mode_flag = True
+                        MainCharacter = Player(v_width // 2, v_height // 2)
                         return comic()
                     if pygame.sprite.spritecollideany(exit_button, cursor_group):
                         terminate()
@@ -139,7 +140,7 @@ def comic():
                 if event.button == 1:
                     if pygame.sprite.spritecollideany(start_button, cursor_group):
                         cursor.kill()
-                        MainCharacter = Player(v_width // 2, v_height // 2)
+                        button_group.empty()
                         return waves[cur_wave]()
             if event.type == pygame.MOUSEMOTION:
                 cords = event.pos
@@ -764,19 +765,24 @@ def non_stopMODE():
     musketeer_bullet_group.empty()
     magician_bullet_group.empty()
     resized_flag = False
+    timer, a, cnt_enemies = 0, 600, 2
     camera = Camera()
     generate_borders(v_width, v_height)
     av_enemies = [Villager, Musketeer, Magician]
-    for _ in range(10):
+    for _ in range(2):
         generate_enemies(2, ch(av_enemies))
 
     while True:
+        timer += 1
         virtual_surface.fill('black')
         virtual_surface.blit(background, (0, 0))
         keys = pygame.key.get_pressed()
-
-        if len(enemy_group) < 20:
-            generate_enemies(n := randint(2, 5), ch(av_enemies))
+        print(len(enemy_group) < cnt_enemies, timer % a == 0)
+        if len(enemy_group) < cnt_enemies or timer % a == 0:
+            generate_enemies(randint(2, 5), ch(av_enemies))
+        if timer // 60 == 60:
+            a = max(a - 60, 30)
+            cnt_enemies += 1
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
