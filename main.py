@@ -765,7 +765,7 @@ def non_stopMODE():
     musketeer_bullet_group.empty()
     magician_bullet_group.empty()
     resized_flag = False
-    timer, a, cnt_enemies = 0, 600, 2
+    timer, cnt_enemies, enemies_max_coeff = 0, 2, 1
     camera = Camera()
     generate_borders(v_width, v_height)
     av_enemies = [Villager, Musketeer, Magician]
@@ -777,12 +777,20 @@ def non_stopMODE():
         virtual_surface.fill('black')
         virtual_surface.blit(background, (0, 0))
         keys = pygame.key.get_pressed()
-        if len(enemy_group) < cnt_enemies or timer % a == 0:
-            generate_enemies(randint(2, 5), ch(av_enemies))
 
-        if timer // 60 == 60:
-            a = max(a - 60, 30)
-            cnt_enemies += 1
+        if (timer / FPS) < 60:  # increasing minimal count of enemies every 8 sec
+            if (timer / FPS) % 8 == 0:
+                cnt_enemies += 1
+        else:
+            if (timer / FPS) % 14 == 0:
+                cnt_enemies += 1
+
+        if (timer / FPS) % 40 == 0:  # 40 sec passed, increasing coeff of enemies spawning
+            enemies_max_coeff += 1
+
+        if len(enemy_group) < cnt_enemies:  # generating enemies
+            for n in range(randint(2, 4) * enemies_max_coeff):
+                generate_enemies(1, ch(av_enemies))
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
