@@ -777,7 +777,6 @@ def non_stopMODE():
         virtual_surface.fill('black')
         virtual_surface.blit(background, (0, 0))
         keys = pygame.key.get_pressed()
-        print(len(enemy_group) < cnt_enemies, timer % a == 0)
         if len(enemy_group) < cnt_enemies or timer % a == 0:
             generate_enemies(randint(2, 5), ch(av_enemies))
         if timer // 60 == 60:
@@ -864,8 +863,6 @@ def update_level(enemy):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_q:
-                return
             if event.type == pygame.KEYDOWN and event.key == pygame.K_m:
                 for sprite in enemy_group:
                     sprite.kill()
