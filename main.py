@@ -455,15 +455,20 @@ class Bullet(pygame.sprite.Sprite):
 class Villager(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y):
         super().__init__(enemy_group, all_sprites)
-        self.frames_amount = len(villager_media['moving'])
-        self.frames = {'l': villager_media['moving'],
-                       'lh': villager_media['moving_h'],
+        self.load_animation(pos_x, pos_y, villager_media)
+        self.hp = Vil_hp
+        self.hit = False
+
+    def load_animation(self, pos_x, pos_y, media):
+        self.frames_amount = len(media['moving'])
+        self.frames = {'l': media['moving'],
+                       'lh': media['moving_h'],
                        'r': list(map(lambda pic:
                                      pygame.transform.flip(pic, True, False),
-                                     villager_media['moving'])),
+                                     media['moving'])),
                        'rh': list(map(lambda pic:
                                       pygame.transform.flip(pic, True, False),
-                                      villager_media['moving_h']))}
+                                      media['moving_h']))}
         self.cur_frame = 0
         self.frame_delay = 15
         self.time_counter = 0
@@ -472,8 +477,6 @@ class Villager(pygame.sprite.Sprite):
         self.rect = self.image.get_rect().move(
             pos_x + 15, pos_y + 5)
         self.prev_direction = ''
-        self.hp = Vil_hp
-        self.hit = False
 
     def update(self, x2, y2, norm_v=3 / (2 ** 0.5)):
         if self.hp <= 0:
@@ -778,8 +781,9 @@ def non_stopMODE():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_q:
-                return
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_k:
+                for sprite in enemy_group:
+                    sprite.load_animation(sprite.rect.x, sprite.rect.y, enemy_images)
             if event.type == pygame.VIDEORESIZE:
                 width = max(event.w, min_width)
                 height = max(event.h, min_height)
@@ -1011,7 +1015,8 @@ musketeer_media = {'moving': [load_image(f'/game/enemy/musketeer/musketeer{i}.pn
                    'moving_h': [load_image(f'/game/enemy/musketeer/musketeer_hit_{i}.png') for i in range(4)]}
 magician_media = {'moving': [load_image(f'/game/enemy/magician/magician_{i}.png') for i in range(2)],
                   'moving_h': [load_image(f'/game/enemy/magician/magician_hit_{i}.png') for i in range(2)]}
-enemy_images = {'stay': load_image(r'game/enemy/EK.png')}
+enemy_images = {'moving': [load_image(r'game/enemy/EK.png')],
+                'moving_h': [load_image(r'game/enemy/EK.png')]}
 
 UNIT_width, UNIT_height = 80, 80
 angles_dict = {'f': ...}
