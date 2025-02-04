@@ -779,6 +779,7 @@ def non_stopMODE():
         keys = pygame.key.get_pressed()
         if len(enemy_group) < cnt_enemies or timer % a == 0:
             generate_enemies(randint(2, 5), ch(av_enemies))
+
         if timer // 60 == 60:
             a = max(a - 60, 30)
             cnt_enemies += 1
