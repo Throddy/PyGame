@@ -60,10 +60,10 @@ def start_screen():
     pygame.mouse.set_visible(False)
 
     k_w, k_h = (width / v_width), (height / v_height)
-    title = Button(410 * k_w, 10 * k_h, 410, 10,(550 * k_w, 120 * k_h),  (550, 120))
+    title = Button(410 * k_w, 10 * k_h, 410, 10, (550 * k_w, 120 * k_h), (550, 120))
     title.set_image('start_screen/title/title_0.png')
 
-    start_button = Button(500 * k_w, 200 * k_h, 500, 200, (350 * k_w, 100 * k_h),  (350, 100))
+    start_button = Button(500 * k_w, 200 * k_h, 500, 200, (350 * k_w, 100 * k_h), (350, 100))
     start_button.set_image('start_screen/startbutton/sprite_0.png')
 
     exit_button = Button(500 * k_w, 350 * k_h, 500, 350, (350 * k_w, 100 * k_h), (350, 100))
@@ -71,10 +71,11 @@ def start_screen():
 
     non_stop_button = Button(500 * k_w, 500 * k_h, 500, 500, (350 * k_w, 100 * k_h), (350, 100))
     non_stop_button.set_image('start_screen/nonstopbutton/nonstop_0.png')
+    fon = pygame.transform.scale(load_image('/start_screen/start_background.png'), (width, height))
 
     while True:
         screen.fill(pygame.Color('black'))
-        fon = pygame.transform.scale(load_image('/start_screen/start_background.png'), (width, height))
+        fon = pygame.transform.scale(fon, (width, height))
         screen.blit(fon, (0, 0))
 
         for event in pygame.event.get():
@@ -115,19 +116,20 @@ def start_screen():
 
 
 def comic():
-    global width, height, screen, v_width, v_height, MainCharacter
+    global width, height, screen, v_width, v_height, MainCharacter, cur_wave, button_group
     cursor = Cursor()
     all_sprites.add(cursor)
     cursor_group.add(cursor)
     flag = False
     pygame.mouse.set_visible(False)
     k_w, k_h = (width / v_width), (height / v_height)
-    start_button = Button(0 * k_w, 700 * k_h, 0, 700,(300 * k_w, 80 * k_h), (300, 80))
+    start_button = Button(0 * k_w, 700 * k_h, 0, 700, (300 * k_w, 80 * k_h), (300, 80))
     start_button.set_image('start_screen/startbutton/sprite_0.png')
+    fon = pygame.transform.scale(load_image(f'start_screen/comic{cur_wave}.png'), (width, height))
 
     while True:
         screen.fill(pygame.Color('black'))
-        fon = pygame.transform.scale(load_image('start_screen/comic.png'), (width, height))
+        fon = pygame.transform.scale(fon, (width, height))
         screen.blit(fon, (0, 0))
 
         for event in pygame.event.get():
@@ -138,7 +140,7 @@ def comic():
                     if pygame.sprite.spritecollideany(start_button, cursor_group):
                         cursor.kill()
                         MainCharacter = Player(v_width // 2, v_height // 2)
-                        return wave1()
+                        return waves[cur_wave]()
             if event.type == pygame.MOUSEMOTION:
                 cords = event.pos
                 flag = pygame.mouse.get_focused()
@@ -175,13 +177,14 @@ def bad_end():
 
     exit_button = Button(700 * k_w, 600 * k_h, 700, 600, (350 * k_w, 100 * k_h), (350, 100))
     exit_button.set_image('start_screen/exitbutton/exitbutton_0.png')
+    fon = pygame.transform.scale(load_image('start_screen/game_over2.png'), (width, height))
 
     if non_stop_mode_flag:
         results = stat_results(stat_file_name)
 
     while True:
         screen.fill(pygame.Color('black'))
-        fon = pygame.transform.scale(load_image('start_screen/game_over2.png'), (width, height))
+        fon = pygame.transform.scale(fon, (width, height))
         screen.blit(fon, (0, 0))
 
         if non_stop_mode_flag:
@@ -243,10 +246,11 @@ def final_screen():
 
     exit_button = Button(700 * k_w, 600 * k_h, 700, 600, (350 * k_w, 100 * k_h), (350, 100))
     exit_button.set_image('start_screen/exitbutton/exitbutton_0.png')
+    fon = pygame.transform.scale(load_image('game/final_screen.png'), (width, height))
 
     while True:
         screen.fill(pygame.Color('black'))
-        fon = pygame.transform.scale(load_image('game/final_screen.png'), (width, height))
+        fon = pygame.transform.scale(fon, (width, height))
         screen.blit(fon, (0, 0))
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -565,7 +569,6 @@ class Musketeer(pygame.sprite.Sprite):
             if non_stop_mode_flag:
                 review_stats(stat_file_name, self, killed=True)
 
-
         if pygame.sprite.spritecollide(self, MCbullet_group, dokill=True):
             self.hit = True
             self.hp -= MC_damage
@@ -843,6 +846,8 @@ def update_level(enemy):
             if MainCharacter.rect.x > v_width:
                 cur_wave += 1
                 if cur_wave <= 3:
+                    if cur_wave <= 2:
+                        comic()
                     waves[cur_wave]()
                 return
 
@@ -939,12 +944,13 @@ def draw_hp_bar(self, x, y, cur_hp):
 def start_stats(file_name):
     with open(file_name, 'w') as csv_file:
         writer = csv.DictWriter(csv_file, fieldnames=headers,
-        delimiter=';', quoting=csv.QUOTE_NONNUMERIC)
+                                delimiter=';', quoting=csv.QUOTE_NONNUMERIC)
         writer.writeheader()
         start_data = {}
         for header, start_vals in zip(headers, [0] * len(headers)):
             start_data[header] = start_vals
         writer.writerow(start_data)
+
 
 def review_stats(file_name, enemy=None, killed=False, time_ticked=False, shoted=False):
     global headers
@@ -1042,7 +1048,6 @@ start_mode_flag = False
 non_stop_mode_flag = False
 bad_end_flag = False
 exit_flag = False
-
 
 if __name__ == '__main__':
     start_screen()
