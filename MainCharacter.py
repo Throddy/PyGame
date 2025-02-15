@@ -1,14 +1,7 @@
-import pygame, os, sys, csv
+import pygame
 from fractions import Fraction
-from random import randint
-from random import choice as ch
-from PIL import Image
-from math import atan2, hypot, degrees
 
-from sprite_groups import *
-from images import player_media, make_img
-from settings import *
-from sounds import *
+from images import player_media
 from stat_functions import *
 
 

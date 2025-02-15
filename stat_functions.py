@@ -1,4 +1,5 @@
 from settings import stat_file_name
+import csv
 from Enemies import *
 
 
@@ -34,3 +35,14 @@ def stat_results(file_name):
     with open(file_name, 'r') as csv_file:
         data = list(csv.DictReader(csv_file, delimiter=';', quotechar='"'))
     return data[-1].items()
+
+
+def start_stats(file_name):
+    with open(file_name, 'w') as csv_file:
+        writer = csv.DictWriter(csv_file, fieldnames=headers,
+                                delimiter=';', quoting=csv.QUOTE_NONNUMERIC)
+        writer.writeheader()
+        start_data = {}
+        for header, start_vals in zip(headers, [0] * len(headers)):
+            start_data[header] = start_vals
+        writer.writerow(start_data)

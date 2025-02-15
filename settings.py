@@ -37,3 +37,4 @@ headers = ["Total VILLAGERS you've destroyed", "Total MUSKETEERS you've destroye
 non_stop_mode_flag = False
 
 FPS = 60
+clock = pygame.time.Clock()

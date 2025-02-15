@@ -1,20 +1,13 @@
-import pygame, os, sys, csv
-from fractions import Fraction
-from random import randint
-from random import choice as ch
-from PIL import Image
+import pygame
 from math import atan2, hypot, degrees
-
-from settings import *
-from stat_functions import *
 from sprite_groups import *
 from images import *
 
 
 class Bullet(pygame.sprite.Sprite):
-    global enemies_firing_range, MC_firing_range, width, height
+    global enemies_firing_range, MC_firing_range
 
-    def __init__(self, MC_coords, mouse_coords, enemy=''):
+    def __init__(self, MC_coords, mouse_coords, width, height, enemy=''):
         if not enemy:
             super().__init__(MCbullet_group, all_sprites)
             self.image = tile_images['MC_bullet']

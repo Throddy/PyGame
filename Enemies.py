@@ -1,13 +1,8 @@
-import pygame, os, sys, csv
-from fractions import Fraction
-from random import randint
-from random import choice as ch
-from PIL import Image
-from math import atan2, hypot, degrees
+import pygame
 
 from Bullet import Bullet
 from sprite_groups import *
-from images import *
+from images import (villager_media, make_img, load_image, musketeer_media, magician_media)
 from settings import *
 from sounds import *
 from stat_functions import *
@@ -39,7 +34,7 @@ class Villager(pygame.sprite.Sprite):
             pos_x + 15, pos_y + 5)
         self.prev_direction = ''
 
-    def update(self, x2, y2, norm_v=3 / (2 ** 0.5)):
+    def update(self, x2, y2, *args, norm_v=3 / (2 ** 0.5)):
         if self.hp <= 0:
             self.kill()
             if non_stop_mode_flag:
@@ -127,7 +122,7 @@ class Musketeer(pygame.sprite.Sprite):
             pos_x + 15, pos_y + 5)
         self.prev_direction = ''
 
-    def update(self, x2, y2, norm_v=3 / (2 ** 0.5)):
+    def update(self, x2, y2, width, height, norm_v=3 / (2 ** 0.5)):
         if self.hp <= 0:
             self.kill()
             if non_stop_mode_flag:
@@ -144,7 +139,7 @@ class Musketeer(pygame.sprite.Sprite):
 
         dist = (perp_x ** 2 + perp_y ** 2) ** 0.5
 
-        self.shot(x2, y2, dist)
+        self.shot(x2, y2, dist, width, height)
 
         if dist != 0:
             vx = (perp_x / dist) * norm_v
@@ -194,12 +189,12 @@ class Musketeer(pygame.sprite.Sprite):
             self.time_counter = 0
             self.hit = False
 
-    def shot(self, x2, y2, dist):
+    def shot(self, x2, y2, dist, width, height):
         self.shot_counter += 1
         x1, y1 = self.rect.x, self.rect.y
         if dist < 1000 and self.shot_counter >= self.shot_freq:
             self.shot_counter = 0
-            Bullet((x1, y1), (x2, y2), 'Musketeer')
+            Bullet((x1, y1), (x2, y2), width, height, 'Musketeer')
             musket_snd.play()
 
 
@@ -209,10 +204,10 @@ class Magician(Musketeer):
         self.load_animation(pos_x, pos_y, magician_media)
         self.hp = Mag_hp
 
-    def shot(self, x2, y2, dist):
+    def shot(self, x2, y2, dist, width, height):
         self.shot_counter += 1
         x1, y1 = self.rect.x, self.rect.y
         if dist < 1000 and self.shot_counter >= self.shot_freq:
             self.shot_counter = 0
-            Bullet((x1, y1), (x2, y2), 'Magician')
+            Bullet((x1, y1), (x2, y2), width, height, 'Magician')
             spell_snd.play()
