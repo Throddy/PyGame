@@ -10,7 +10,6 @@ screen = pygame.display.set_mode(size, pygame.RESIZABLE, pygame.FULLSCREEN)
 virtual_surface = pygame.Surface((width, height))
 
 UNIT_width, UNIT_height = 80, 80
-angles_dict = {'f': ...}
 
 MC_width, MC_height = 80, 80
 mc_def_v = 7

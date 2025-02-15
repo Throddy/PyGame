@@ -68,7 +68,7 @@ def non_stopMODE():
     generate_borders(v_width, v_height)
     av_enemies = [Villager, Musketeer, Magician]
     for _ in range(2):
-        generate_enemies(2, ch(av_enemies))
+        generate_enemies(2, ch(av_enemies), non_stop_mode_flag)
 
     while True:
         timer += 1
@@ -88,7 +88,7 @@ def non_stopMODE():
 
         if len(enemy_group) < cnt_enemies:  # generating enemies
             for n in range(randint(2, 4) * enemies_max_coeff):
-                generate_enemies(1, ch(av_enemies))
+                generate_enemies(1, ch(av_enemies), non_stop_mode_flag)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -241,7 +241,7 @@ def start_screen():
                         cursor.kill()
                         button_group.empty()
                         start_mode_flag = True
-                        MainCharacter = Player(v_width // 2, v_height // 2)
+                        MainCharacter = Player(v_width // 2, v_height // 2, non_stop_mode_flag=False)
                         return comic()
                     if pygame.sprite.spritecollideany(exit_button, cursor_group):
                         terminate()
@@ -249,7 +249,7 @@ def start_screen():
                         cursor.kill()
                         button_group.empty()
                         non_stop_mode_flag = True
-                        MainCharacter = Player(v_width // 2, v_height // 2)
+                        MainCharacter = Player(v_width // 2, v_height // 2, non_stop_mode_flag=non_stop_mode_flag)
                         return non_stopMODE()
             if event.type == pygame.VIDEORESIZE:
                 width = max(event.w, min_width)
@@ -443,6 +443,3 @@ exit_flag = False
 
 waves = [wave1, wave2, wave3, final_screen]
 cur_wave = 0
-
-if __name__ == '__main__':
-    start_screen()

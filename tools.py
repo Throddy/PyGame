@@ -34,17 +34,17 @@ def generate_borders(w, h):
         Tree(w - tree_width, i * vert_step)
 
 
-def generate_enemies(n, enemy):
+def generate_enemies(n, enemy, mode=False):
     for _ in range(n):
         side = randint(1, 4)
         if side == 1:
-            enemy(0, randint(0, v_height))
+            enemy(0, randint(0, v_height), mode)
         elif side == 2:
-            enemy(randint(0, v_width), 0)
+            enemy(randint(0, v_width), 0, mode)
         elif side == 4:
-            enemy(v_width, randint(0, v_height))
+            enemy(v_width, randint(0, v_height), mode)
         else:
-            enemy(randint(0, v_width), v_height)
+            enemy(randint(0, v_width), v_height, mode)
 
 
 def draw_hp_bar(self, x, y, cur_hp):

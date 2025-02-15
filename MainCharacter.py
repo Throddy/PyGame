@@ -3,12 +3,12 @@ from fractions import Fraction
 
 from images import player_media
 from stat_functions import *
-
+from main import non_stop_mode_flag
 
 class Player(pygame.sprite.Sprite):
     global bad_end_flag
 
-    def __init__(self, pos_x, pos_y):
+    def __init__(self, pos_x, pos_y, non_stop_mode_flag):
         super().__init__(player_group, all_sprites)
         self.frames_amount = len(player_media['moving'])
         self.frames = {'l': player_media['moving'],
@@ -31,10 +31,11 @@ class Player(pygame.sprite.Sprite):
         self.hp = MC_hp
         self.hit = False
         self.time = 0
+        self.non_stop_mode_flag = non_stop_mode_flag
 
     def update(self, keys, vx=0, vy=0):
         global bad_end_flag
-        if self.time.denominator == 1 and non_stop_mode_flag:
+        if self.time.denominator == 1 and self.non_stop_mode_flag:
             review_stats(stat_file_name, time_ticked=True)
         if self.hp <= 0:
             bad_end_flag = True
@@ -94,7 +95,7 @@ class Player(pygame.sprite.Sprite):
                                           v_width, v_height, UNIT_width, UNIT_height)
                 else:
                     if cur_direction in 'fd':
-                        if self.prev_direction not in 'fd ':  # не пауза фд == норм двиэ
+                        if self.prev_direction not in 'fd ':  # не пауза фд == норм движ
                             self.save_dir = self.prev_direction
                             self.image = make_img(
                                 self.frames[self.save_dir[0] + ('h' if self.hit else '')][self.cur_frame], v_width,

@@ -1,5 +1,6 @@
 import pygame
 
+import stat_functions
 from Bullet import Bullet
 from sprite_groups import *
 from images import (villager_media, make_img, load_image, musketeer_media, magician_media)
@@ -9,11 +10,12 @@ from stat_functions import *
 
 
 class Villager(pygame.sprite.Sprite):
-    def __init__(self, pos_x, pos_y):
+    def __init__(self, pos_x, pos_y, non_stop_mode_flag):
         super().__init__(enemy_group, all_sprites)
         self.load_animation(pos_x, pos_y, villager_media)
         self.hp = Vil_hp
         self.hit = False
+        self.non_stop_mode_flag = non_stop_mode_flag
 
     def load_animation(self, pos_x, pos_y, media):
         self.frames_amount = len(media['moving'])
@@ -37,8 +39,8 @@ class Villager(pygame.sprite.Sprite):
     def update(self, x2, y2, *args, norm_v=3 / (2 ** 0.5)):
         if self.hp <= 0:
             self.kill()
-            if non_stop_mode_flag:
-                review_stats(stat_file_name, self, killed=True)
+            if self.non_stop_mode_flag:
+                stat_functions.review_stats(stat_file_name, self, killed=True)
 
         if pygame.sprite.spritecollide(self, MCbullet_group, dokill=True):
             self.hit = True
@@ -95,12 +97,13 @@ class Villager(pygame.sprite.Sprite):
 
 
 class Musketeer(pygame.sprite.Sprite):
-    def __init__(self, pos_x, pos_y):
+    def __init__(self, pos_x, pos_y, non_stop_mode_flag):
         super().__init__(enemy_group, all_sprites)
         self.shot_freq = musketeer_firing_delay
         self.load_animation(pos_x, pos_y, musketeer_media)
         self.hp = Musk_hp
         self.hit = False
+        self.non_stop_mode_flag = non_stop_mode_flag
 
     def load_animation(self, pos_x, pos_y, media):
         self.frames_amount = len(media['moving'])
@@ -125,8 +128,8 @@ class Musketeer(pygame.sprite.Sprite):
     def update(self, x2, y2, width, height, norm_v=3 / (2 ** 0.5)):
         if self.hp <= 0:
             self.kill()
-            if non_stop_mode_flag:
-                review_stats(stat_file_name, self, killed=True)
+            if self.non_stop_mode_flag:
+                stat_functions.review_stats(stat_file_name, self, killed=True)
 
         if pygame.sprite.spritecollide(self, MCbullet_group, dokill=True):
             self.hit = True
@@ -199,10 +202,11 @@ class Musketeer(pygame.sprite.Sprite):
 
 
 class Magician(Musketeer):
-    def __init__(self, pos_x, pos_y):
-        super().__init__(pos_x, pos_y)
+    def __init__(self, pos_x, pos_y, non_stop_mode_flag):
+        super().__init__(pos_x, pos_y, non_stop_mode_flag)
         self.load_animation(pos_x, pos_y, magician_media)
         self.hp = Mag_hp
+        self.non_stop_mode_flag = non_stop_mode_flag
 
     def shot(self, x2, y2, dist, width, height):
         self.shot_counter += 1
