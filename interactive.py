@@ -4,6 +4,7 @@ from images import load_image
 from settings import v_width, v_height
 
 
+# класс кнопки
 class Button(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y, x, y, size, size2):
         super().__init__(button_group, all_sprites)
@@ -20,11 +21,13 @@ class Button(pygame.sprite.Sprite):
         self.rect = self.image.get_rect().move(self.pos_x + 15, self.pos_y + 5)
 
     def update(self):
+        # нажатие кнопки
         if pygame.sprite.spritecollideany(self, cursor_group):
             self.set_image(self.way[:-5] + '1.png')
         else:
             self.set_image(self.way[:-5] + '0.png')
 
+    # изменение размеров обьекта при изменении размеров окна
     def resize(self, width, height):
         global v_width, v_height
         new_W, new_H = self.WIDTH * (width / v_width), self.HEIGHT * (height / v_height)
@@ -33,6 +36,7 @@ class Button(pygame.sprite.Sprite):
         self.rect = self.image.get_rect().move(self.pos_x + 15, self.pos_y + 5)
 
 
+# собственный курсор
 class Cursor(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__(player_group, all_sprites)

@@ -4,6 +4,7 @@ import sys
 from settings import *
 
 
+# функция загрузки изображения(для создания фрэймов обьектов) и впринципе загруженных анимация в игре
 def load_image(name, colorkey=None):
     fullname = os.path.join(f'data/{name}')
     if not os.path.isfile(fullname):
@@ -20,10 +21,12 @@ def load_image(name, colorkey=None):
     return image
 
 
+# изменяет размер изображения под размеры экрана в данный момент
 def make_img(img, w, h, persW, persH):
     return pygame.transform.scale(img, (w // (w // persW), h // (h // persH)))
 
 
+# все загруженные анимации в игре
 tile_images = {
     'tree': load_image(r'game/water.png'),
     'MC_bullet': load_image(r'game/Bullet.png'),

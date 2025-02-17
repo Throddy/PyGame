@@ -9,6 +9,7 @@ from sounds import *
 from stat_functions import *
 
 
+#класс сельчанина
 class Villager(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y, non_stop_mode_flag):
         super().__init__(enemy_group, all_sprites)
@@ -17,6 +18,7 @@ class Villager(pygame.sprite.Sprite):
         self.hit = False
         self.non_stop_mode_flag = non_stop_mode_flag
 
+    # по аналогии с основным персонажем делаем анимацию и необходимые фреймы(смотрящие в разные стороны)
     def load_animation(self, pos_x, pos_y, media):
         self.frames_amount = len(media['moving'])
         self.frames = {'l': media['moving'],
@@ -41,11 +43,12 @@ class Villager(pygame.sprite.Sprite):
             self.kill()
             if self.non_stop_mode_flag:
                 stat_functions.review_stats(stat_file_name, self, killed=True)
-
+        # получение урона - хп минус урон от пули выпущенной игроком
         if pygame.sprite.spritecollide(self, MCbullet_group, dokill=True):
             self.hit = True
             self.hp -= MC_damage
 
+        # движение персонажа
         x1, y1 = self.rect.x, self.rect.y
 
         perp_x = x2 - x1
@@ -68,7 +71,7 @@ class Villager(pygame.sprite.Sprite):
         if perp_x < 0:
             r = 'r'
         cur_direction = l + r + f + d
-
+        #   анимация
         self.time_counter += 1
         if self.time_counter >= self.frame_delay:
             self.cur_frame = (self.cur_frame + 1) % self.frames_amount
@@ -95,7 +98,7 @@ class Villager(pygame.sprite.Sprite):
             self.time_counter = 0
             self.hit = False
 
-
+# по аналогии с сельчанином создаем анимацию, движение и получение урона
 class Musketeer(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y, non_stop_mode_flag):
         super().__init__(enemy_group, all_sprites)
@@ -192,6 +195,7 @@ class Musketeer(pygame.sprite.Sprite):
             self.time_counter = 0
             self.hit = False
 
+    # возможность стрельбы мушкетера
     def shot(self, x2, y2, dist, width, height):
         self.shot_counter += 1
         x1, y1 = self.rect.x, self.rect.y
@@ -201,6 +205,7 @@ class Musketeer(pygame.sprite.Sprite):
             musket_snd.play()
 
 
+# наследуем от класса мушкетера, изменяя урон и скорость стрельбы( и скорость полета фаербола)
 class Magician(Musketeer):
     def __init__(self, pos_x, pos_y, non_stop_mode_flag):
         super().__init__(pos_x, pos_y, non_stop_mode_flag)

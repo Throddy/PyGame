@@ -7,6 +7,7 @@ from interactive import *
 from tools import *
 
 
+# первая волна(сельчане), загрузка соответсвующей уровню музыки, барьеров, заднего фона
 def wave1():
     global background, tile_images, v_height, v_width
     pygame.mixer.music.load('data/game/music/vil_bgm.mp3')
@@ -21,6 +22,7 @@ def wave1():
     update_level(Villager)
 
 
+# вторая волна(мушкетеры), загрузка ресурсов аналогично другим волнам с уникальными ресурсами
 def wave2():
     global v_width, v_height, background, tile_images
     pygame.mixer.music.load('data/game/music/musket_bgm.mp3')
@@ -35,6 +37,7 @@ def wave2():
     update_level(Musketeer)
 
 
+# третья волна(маги)
 def wave3():
     global v_width, v_height, background, tile_images
     pygame.mixer.music.load('data/game/music/mag_bgm.mp3')
@@ -49,6 +52,7 @@ def wave3():
     update_level(Magician)
 
 
+# режим нонстопа-соответсвующие элементы и запись статистики
 def non_stopMODE():
     global background, width, height, bad_end_flag, cur_wave, virtual_surface, screen, headers, stat_file_name
     pygame.mouse.set_visible(True)
@@ -75,15 +79,16 @@ def non_stopMODE():
         virtual_surface.fill('black')
         virtual_surface.blit(background, (0, 0))
         keys = pygame.key.get_pressed()
-
-        if (timer / FPS) < 60:  # increasing minimal count of enemies every 8 sec
-            if (timer / FPS) % 8 == 0:
+        # сбалансированная генерация врагов по определенным таймингам и событиям
+        # генерация врагов с флагом нонстоп-значит из каждого класса персонажа идет запись нужной данной в статистику
+        if (timer / FPS) < 60:  # увеличиваем минимальное количество врагов каждые 10 сек если прошло меньше минуты
+            if (timer / FPS) % 10 == 0:
                 cnt_enemies += 1
         else:
-            if (timer / FPS) % 14 == 0:
+            if (timer / FPS) % 20 == 0: # каждые 20 сек если больше минуты
                 cnt_enemies += 1
 
-        if (timer / FPS) % 40 == 0:  # 40 sec passed, increasing coeff of enemies spawning
+        if (timer / FPS) % 60 == 0:  # увеличиваем коэффицент спавна врагов при прохождении каждой минуты
             enemies_max_coeff += 1
 
         if len(enemy_group) < cnt_enemies:  # generating enemies
@@ -128,6 +133,7 @@ def non_stopMODE():
         clock.tick(FPS)
 
 
+# стори режим, обновление уровня в соответствии с предидущей волной
 def update_level(enemy):
     global background, width, height, bad_end_flag, cur_wave, virtual_surface, screen
     bad_end_flag = False
@@ -201,6 +207,7 @@ def update_level(enemy):
         clock.tick(FPS)
 
 
+# начальный экран, собственная музыка, кнопки и курсор
 def start_screen():
     global width, height, screen, v_width, v_height, non_stop_mode_flag, start_mode_flag, MainCharacter
     start_mode_flag, non_stop_mode_flag = False, False
@@ -213,6 +220,7 @@ def start_screen():
     flag = False
     pygame.mouse.set_visible(False)
 
+    #загрузка нужных фрэймов обьектам
     k_w, k_h = (width / v_width), (height / v_height)
     title = Button(410 * k_w, 10 * k_h, 410, 10, (550 * k_w, 120 * k_h), (550, 120))
     title.set_image('start_screen/title/title_0.png')
@@ -237,6 +245,9 @@ def start_screen():
                 terminate()
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
+                    #обработка нажания кнопок по коллайду и нажатию на курсор
+                    #создание основного персонажа при нажатии на кнопку режима игры
+                    #выбирается определенный флаг в соответствии с выбранным режимом
                     if pygame.sprite.spritecollideany(start_button, cursor_group):
                         cursor.kill()
                         button_group.empty()
@@ -251,6 +262,7 @@ def start_screen():
                         non_stop_mode_flag = True
                         MainCharacter = Player(v_width // 2, v_height // 2, non_stop_mode_flag=non_stop_mode_flag)
                         return non_stopMODE()
+            # изменение размеров окна
             if event.type == pygame.VIDEORESIZE:
                 width = max(event.w, min_width)
                 height = max(event.h, min_height)
@@ -270,6 +282,7 @@ def start_screen():
         clock.tick(FPS)
 
 
+# анимация комикса(стори режим)
 def comic():
     global width, height, screen, v_width, v_height, MainCharacter, cur_wave, button_group
     cursor = Cursor()
@@ -295,7 +308,7 @@ def comic():
                     if pygame.sprite.spritecollideany(start_button, cursor_group):
                         cursor.kill()
                         button_group.empty()
-                        return waves[cur_wave]()
+                        return waves[cur_wave]()    # загрузка первой волны(сельчан) при нажатии на кнопку старта
             if event.type == pygame.MOUSEMOTION:
                 cords = event.pos
                 flag = pygame.mouse.get_focused()
@@ -305,7 +318,7 @@ def comic():
                 height = max(event.h, min_height)
                 screen = pygame.display.set_mode((width, height), pygame.RESIZABLE)
                 for btn in button_group:
-                    btn.resize(width, height)
+                    btn.resize(width, height)   # изменение размеров кнопок при изменении размеров экрана
         button_group.update()
         button_group.draw(screen)
         if flag:
@@ -314,6 +327,8 @@ def comic():
         clock.tick(FPS)
 
 
+# плохая концовка(гибель персонажа)
+# свой задний фон, музыкаи курсор
 def bad_end():
     global cur_wave, screen, width, height, v_width, v_height, non_stop_mode_flag
     pygame.mixer.music.load('data/game/music/bad_end.mp3')
@@ -362,7 +377,7 @@ def bad_end():
                         button_group.empty()
                         cur_wave = 0
                         start_button, non_stop_mode_flag = False, False
-                        return start_screen()
+                        return start_screen()   # возвращение в главное меню
                     if pygame.sprite.spritecollideany(exit_button, cursor_group):
                         terminate()
             if event.type == pygame.VIDEORESIZE:
@@ -383,6 +398,7 @@ def bad_end():
         clock.tick(FPS)
 
 
+# финальный экран при победе персонажа
 def final_screen():
     global cur_wave, screen, width, height, v_width, v_height
     pygame.mixer.music.load('data/game/music/happy_end.mp3')
@@ -416,10 +432,10 @@ def final_screen():
                         cursor.kill()
                         button_group.empty()
                         cur_wave = 0
-                        return start_screen()
+                        return start_screen()   # начать заново
                     if pygame.sprite.spritecollideany(exit_button, cursor_group):
                         terminate()
-            if event.type == pygame.VIDEORESIZE:
+            if event.type == pygame.VIDEORESIZE:    # изменение размеров окна
                 width = max(event.w, min_width)
                 height = max(event.h, min_height)
                 screen = pygame.display.set_mode((width, height), pygame.RESIZABLE)

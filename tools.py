@@ -9,6 +9,7 @@ from Enemies import Villager, Musketeer, Magician
 from MainCharacter import Player
 
 
+# класс дерева(барьер)
 class Tree(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y):
         super().__init__(trees_group, all_sprites)
@@ -19,6 +20,7 @@ class Tree(pygame.sprite.Sprite):
             pos_x, pos_y)
 
 
+# автоматическое создание барьеров
 def generate_borders(w, h):
     for sprite in trees_group:
         sprite.kill()
@@ -34,6 +36,7 @@ def generate_borders(w, h):
         Tree(w - tree_width, i * vert_step)
 
 
+# генерация врагов в случайных позициях
 def generate_enemies(n, enemy, mode=False):
     for _ in range(n):
         side = randint(1, 4)
@@ -47,6 +50,7 @@ def generate_enemies(n, enemy, mode=False):
             enemy(randint(0, v_width), v_height, mode)
 
 
+# отрисовка шкалы здоровья действующих персонажей
 def draw_hp_bar(self, x, y, cur_hp):
     if type(self) is Villager:
         color1, color2 = 'purple', 'black'

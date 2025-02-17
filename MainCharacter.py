@@ -5,12 +5,13 @@ from images import player_media
 from stat_functions import *
 from main import non_stop_mode_flag
 
-class Player(pygame.sprite.Sprite):
+class Player(pygame.sprite.Sprite):     # класс главного героя
     global bad_end_flag
 
     def __init__(self, pos_x, pos_y, non_stop_mode_flag):
         super().__init__(player_group, all_sprites)
         self.frames_amount = len(player_media['moving'])
+        # необходимые анимации
         self.frames = {'l': player_media['moving'],
                        'r': list(map(lambda pic:
                                      pygame.transform.flip(pic, True, False),
@@ -35,6 +36,7 @@ class Player(pygame.sprite.Sprite):
 
     def update(self, keys, vx=0, vy=0):
         global bad_end_flag
+        # записываем +1 секундку в стату если режим нонстоп по истечении времени 60 тиков \ 60 сек = 1 сек
         if self.time.denominator == 1 and self.non_stop_mode_flag:
             review_stats(stat_file_name, time_ticked=True)
         if self.hp <= 0:
@@ -42,6 +44,7 @@ class Player(pygame.sprite.Sprite):
             self.kill()
             if non_stop_mode_flag:
                 return
+        # уменьшаем хп при ударах
         if pygame.sprite.spritecollide(self, musketeer_bullet_group, dokill=True):
             self.hit = True
             ouch_snd.play()
@@ -56,6 +59,7 @@ class Player(pygame.sprite.Sprite):
             self.hp -= Vil_damage
             self.time = 0
 
+        #управление персонажа
         l, r, f, d = '', '', '', ''
         if not keys[pygame.K_SPACE]:
             if keys[pygame.K_a]:
@@ -88,6 +92,7 @@ class Player(pygame.sprite.Sprite):
                 vy = 0
 
             self.time_counter += 1
+            # направление анимации(фрейма) в нужную сторону
             if self.time_counter >= self.frame_delay:
                 self.cur_frame = (self.cur_frame + 1) % self.frames_amount
                 if cur_direction not in 'fd ':
