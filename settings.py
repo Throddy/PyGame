@@ -1,6 +1,5 @@
 import pygame
 
-
 # все используемые данные(настройки обьектов игры), размеры, количества, хп, константы и тд.
 size = width, height = v_width, v_height = 1400, 800
 min_width, min_height = 1200, 700

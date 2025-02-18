@@ -5,7 +5,8 @@ from images import player_media
 from stat_functions import *
 from main import non_stop_mode_flag
 
-class Player(pygame.sprite.Sprite):     # класс главного героя
+
+class Player(pygame.sprite.Sprite):  # класс главного героя
     global bad_end_flag
 
     def __init__(self, pos_x, pos_y, non_stop_mode_flag):
@@ -59,7 +60,7 @@ class Player(pygame.sprite.Sprite):     # класс главного героя
             self.hp -= Vil_damage
             self.time = 0
 
-        #управление персонажа
+        # управление персонажа
         l, r, f, d = '', '', '', ''
         if not keys[pygame.K_SPACE]:
             if keys[pygame.K_a]:

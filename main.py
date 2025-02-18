@@ -85,7 +85,7 @@ def non_stopMODE():
             if (timer / FPS) % 10 == 0:
                 cnt_enemies += 1
         else:
-            if (timer / FPS) % 20 == 0: # каждые 20 сек если больше минуты
+            if (timer / FPS) % 20 == 0:  # каждые 20 сек если больше минуты
                 cnt_enemies += 1
 
         if (timer / FPS) % 60 == 0:  # увеличиваем коэффицент спавна врагов при прохождении каждой минуты
@@ -220,7 +220,7 @@ def start_screen():
     flag = False
     pygame.mouse.set_visible(False)
 
-    #загрузка нужных фрэймов обьектам
+    # загрузка нужных фрэймов обьектам
     k_w, k_h = (width / v_width), (height / v_height)
     title = Button(410 * k_w, 10 * k_h, 410, 10, (550 * k_w, 120 * k_h), (550, 120))
     title.set_image('start_screen/title/title_0.png')
@@ -245,9 +245,9 @@ def start_screen():
                 terminate()
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
-                    #обработка нажания кнопок по коллайду и нажатию на курсор
-                    #создание основного персонажа при нажатии на кнопку режима игры
-                    #выбирается определенный флаг в соответствии с выбранным режимом
+                    # обработка нажания кнопок по коллайду и нажатию на курсор
+                    # создание основного персонажа при нажатии на кнопку режима игры
+                    # выбирается определенный флаг в соответствии с выбранным режимом
                     if pygame.sprite.spritecollideany(start_button, cursor_group):
                         cursor.kill()
                         button_group.empty()
@@ -308,7 +308,7 @@ def comic():
                     if pygame.sprite.spritecollideany(start_button, cursor_group):
                         cursor.kill()
                         button_group.empty()
-                        return waves[cur_wave]()    # загрузка первой волны(сельчан) при нажатии на кнопку старта
+                        return waves[cur_wave]()  # загрузка первой волны(сельчан) при нажатии на кнопку старта
             if event.type == pygame.MOUSEMOTION:
                 cords = event.pos
                 flag = pygame.mouse.get_focused()
@@ -318,7 +318,7 @@ def comic():
                 height = max(event.h, min_height)
                 screen = pygame.display.set_mode((width, height), pygame.RESIZABLE)
                 for btn in button_group:
-                    btn.resize(width, height)   # изменение размеров кнопок при изменении размеров экрана
+                    btn.resize(width, height)  # изменение размеров кнопок при изменении размеров экрана
         button_group.update()
         button_group.draw(screen)
         if flag:
@@ -377,7 +377,7 @@ def bad_end():
                         button_group.empty()
                         cur_wave = 0
                         start_button, non_stop_mode_flag = False, False
-                        return start_screen()   # возвращение в главное меню
+                        return start_screen()  # возвращение в главное меню
                     if pygame.sprite.spritecollideany(exit_button, cursor_group):
                         terminate()
             if event.type == pygame.VIDEORESIZE:
@@ -432,10 +432,10 @@ def final_screen():
                         cursor.kill()
                         button_group.empty()
                         cur_wave = 0
-                        return start_screen()   # начать заново
+                        return start_screen()  # начать заново
                     if pygame.sprite.spritecollideany(exit_button, cursor_group):
                         terminate()
-            if event.type == pygame.VIDEORESIZE:    # изменение размеров окна
+            if event.type == pygame.VIDEORESIZE:  # изменение размеров окна
                 width = max(event.w, min_width)
                 height = max(event.h, min_height)
                 screen = pygame.display.set_mode((width, height), pygame.RESIZABLE)

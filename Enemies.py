@@ -9,7 +9,7 @@ from sounds import *
 from stat_functions import *
 
 
-#класс сельчанина
+# класс сельчанина
 class Villager(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y, non_stop_mode_flag):
         super().__init__(enemy_group, all_sprites)
@@ -97,6 +97,7 @@ class Villager(pygame.sprite.Sprite):
             self.prev_direction = cur_direction
             self.time_counter = 0
             self.hit = False
+
 
 # по аналогии с сельчанином создаем анимацию, движение и получение урона
 class Musketeer(pygame.sprite.Sprite):
